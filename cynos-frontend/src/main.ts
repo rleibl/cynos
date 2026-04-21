@@ -2,18 +2,320 @@ import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../amplify/data/resources";
 import './style.css'
 import { Amplify } from "aws-amplify";
+
+import { signUp } from "aws-amplify/auth"
+import { signIn } from "aws-amplify/auth"
+import { confirmSignUp } from 'aws-amplify/auth'
+import { getCurrentUser } from 'aws-amplify/auth'
+import { fetchUserAttributes } from 'aws-amplify/auth'
+
 import outputs from '../amplify_outputs.json';
 
 Amplify.configure(outputs);
 
-const client = generateClient<Schema>();
 
-const rss_check_field = document.getElementById("rsslastcheck");
+/* ********************************************************** */
+function userNotification(status, msg) {
 
-const { data, errors } = await client.queries.getRss();
-console.log("data: ", data)
-console.log("errors: ", errors);
+	var s = document.createElement('span');
+	if( status == "ERROR" ) {
+		s.style.color = "red";
+	} else if( status === "OK" ) {
+		s.style.color = "green";
+	} // else white
 
-const unixTimestamp = data['t'];
-const date = new Date(unixTimestamp * 1000);
-rss_check_field.innerHTML = date.toLocaleString();
+	s.textContent = msg;
+
+	const parent = document.getElementById('notifications');
+	parent.replaceChildren(s);
+}
+
+/* ********************************************************** */
+async function checkUser() {
+  try {
+    const { username, userId, signInDetails } = await getCurrentUser();
+    console.log(`Current user: ${username}`);
+    console.log(`  userId: ${userId}`);
+    console.log(`  SignInDetails: ${signInDetails}`);
+    return [true, username];
+  } catch (err) {
+    console.log(err);
+    console.log("User is not signed in");
+    return [false, ""];
+  }
+}
+
+/* ********************************************************** */
+async function loginWindow() {
+    var h = `
+    <h1>Login to Cynos</h1>
+    <form id="loginform">
+      <label htmlFor="email">Email:</label>
+      <input type="text" id="email" name="email" /><br>
+      <label htmlFor="password">Password:</label>
+      <input type="password" id="password" name="password" /><br>
+      <input type="submit" />
+    </form>
+    <a href="/register">Don't have an account? Register here</a>`
+    document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
+
+    var form = document.getElementById('loginform');
+    form.addEventListener('submit', async function (event) {
+	    event.preventDefault()
+    	    email = document.getElementById('email').value;
+	    password = document.getElementById('password').value;
+	    const { nextStep } = await signIn({
+		    username: email,
+		    password: password,
+		    options: {
+			    authFlowType: 'USER_PASSWORD_AUTH',
+			    preferredChallenge: 'PASSWORT'
+		    }
+	    });
+	    if (nextStep.signInStep === 'DONE') {
+		    console.log("Signin successful");
+		    window.location.replace("/");
+	    } else {
+		    console.log("Login failed: "+nextStep.signInStep);
+		    userNotification("Login failed");
+	    }
+    });
+}
+
+/* ********************************************************** */
+async function register(event) {
+	event.preventDefault()
+	var email = document.getElementById('email').value;
+	var password = document.getElementById('password').value;
+	//console.log(email, password);
+
+	const { isSignUpComplete, userId, nextStep } = await signUp({
+		username: email,
+		password: password,
+		options: {
+			userAttributes: {
+      				email: email
+    			},
+  		}
+	});
+	if (nextStep == "DONE") {
+		// Registering requires entering a code sent via email.
+		// The registration process cannot be done.
+		alert("Registering in state DONE. Should require verification code");
+		return;
+	} else if (nextStep == "COMPLETE_AUTO_SIGN_IN") {
+		alert("Well this is awkward. Auto sign in was returned. I can't do that");
+	} else if (nextStep == "CONFIRM_SIGN_UP") {
+		// this should be default.
+		// A code has been sent via email. Show verification pane.
+	}
+
+	var h = `
+	<h1>Verify email</h1>
+	An email with a confirmation code has been sent to ` + email +`. Please
+	enter the code below.<br>
+	<form id="verifyForm">
+  	  <input type="text" id="verifycode" />
+	  <input type="submit" />
+	</form>`
+    	document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
+
+    	var form = document.getElementById("verifyForm");
+	form.addEventListener('submit', function (event) {
+		var code = document.getElementById('verifycode').value;
+		verifyUser(event, email, code)
+	});
+}
+
+/* ********************************************************** */
+function registerWindow() {
+    var h = `
+	<h1>Register for Cynos</h1>
+	<form id="registerForm">
+	  <label htmlFor="email">Email:</label>
+	  <input type="text" id="email" name="email" /><br>
+	  <label htmlFor="password">Password:</label>
+	  <input type="password" id="password" name="password" /><br>
+	  <input type="submit" />
+	</form>`
+    document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
+
+    var form = document.getElementById("registerForm");
+    form.addEventListener('submit', register);
+}
+
+/* ********************************************************** */
+async function verifyUser(event, email, code) {
+	event.preventDefault();
+
+	console.log(email);
+	console.log(code);
+
+	const { nextStep: confirmSignUpNextStep } = await confirmSignUp({
+  		username: email,
+		confirmationCode: code
+	});
+
+	if( confirmSignUpNextStep.signUpStep === "DONE" ) {
+		console.log("SignUp complete");
+		window.location.replace("/");
+	} else {
+		console.log("Signup confirmation failed");
+		userNotification("ERROR", "Signup confirmation failed");
+	}
+
+
+	var h = "<h1>Confirmation failed</h1>";
+    	document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
+}
+
+/* ********************************************************** */
+function verifyWindow() {
+	var h = `
+	<h1>Verify email</h1>
+	<form id="verifyForm">
+	  <label htmlFor="email">Email:</label>
+  	  <input type="text" id="email" />
+	  <label>Code:</label>
+  	  <input type="text" id="verifycode" />
+	  <input type="submit" />
+	</form>`
+    	document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
+
+    	var form = document.getElementById("verifyForm");
+	form.addEventListener('submit', function (event) {
+		var code = document.getElementById('verifycode').value;
+		var email = document.getElementById('email').value;
+		verifyUser(event, email, code) 
+	});
+
+}
+
+
+
+/* ********************************************************** */
+async function mainWindow(username) {
+
+	/* ****************** Page setup ******************** */
+
+	// Get parent
+	const parent = document.getElementById('app');
+
+	const h1 = document.createElement('h1');
+	h1.textContent = 'Cynos Summary';
+
+	var username = "unknown";
+	try {
+    		const attributes = await fetchUserAttributes();
+		console.log("User attributes: ", attributes);
+		username = attributes['email'];
+  	} catch (err) {
+    		console.log(err);
+	}
+	const greeting = document.createTextNode('user');
+	greeting.textContent = "Hello " + username;
+
+	const h2 = document.createElement('h2');
+	h2.textContent = 'Last check for RSS updates';
+
+	const span = document.createElement('span');
+	span.id = 'rsslastcheck';
+	span.textContent = 'never';
+
+	// Swap the old content for the new elements
+	parent.replaceChildren(h1, greeting, h2, span);
+
+	/* ****************** Page setup done *************** */
+
+	const client = generateClient<Schema>();
+
+	const rss_check_field = document.getElementById("rsslastcheck");
+
+	const { data, errors } = await client.queries.getRss();
+	console.log("data: ", data)
+	console.log("errors: ", errors);
+
+	const unixTimestamp = data['t'];
+	const date = new Date(unixTimestamp * 1000);
+	rss_check_field.innerHTML = date.toLocaleString();
+
+	userNotification("OK", "test notification");
+	userNotification("ERROR", "test error");
+}
+
+function mk_link_navigation(path, text, highlight_path) {
+	const l = document.createElement('a');
+	l.href = path;
+	l.textContent = text
+	l.rel = "noopener noreferrer";
+	if( path == highlight_path ) {
+		l.style.color = "white";
+		l.style.fontWeight = "bold";
+	}
+
+	return l;
+}
+/* ********************************************************** */
+async function navigation(path) {
+
+	var parent = document.getElementById('navigation');
+
+	const lhome = mk_link_navigation('/', "home", path);
+	const lalerts = mk_link_navigation('/alerts', "Alerts", path);
+	const lsmb = mk_link_navigation('/smb', "SMB", path);
+
+	var content = [
+		lhome,
+		" | ",
+		lalerts,
+		" | ",
+		lsmb
+	];
+	parent.replaceChildren(...content);
+}
+/* ********************************************************** */
+async function routeAuthenticated(path: string) {
+
+	var [loggedin, username] = await checkUser();
+	if (!loggedin) {
+		loginWindow();
+		return;
+	}
+
+	navigation(path);
+
+	switch (path) {
+		case "/":
+			mainWindow(username);
+			break;
+		default:
+			console.log("Unknown path: " + path);
+			mainWindow(username);
+			
+	}
+}
+
+/* **********************************************************
+ * Routing
+ * **********************************************************/
+var u = new URL(window.location.href);
+
+const path = u.pathname;
+switch (path) {
+	case '/login':
+		console.log("Routing: /login");
+		loginWindow();
+		break;
+	case '/register':
+		console.log("Routing: /register");
+		registerWindow();
+		break;
+	case '/verify':
+		console.log("Routing: /verify");
+		verifyWindow();
+		break;
+	default:
+		console.log("Routing (Authenticated): " + path);
+		routeAuthenticated(path);
+}
+
