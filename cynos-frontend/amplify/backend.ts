@@ -24,20 +24,15 @@ backend.data.addDynamoDbDataSource(
 	externalTable
 );
 
-
-/*
-const externalDataSourcesStack = backend.createStack("MyExternalDataSources");
-
-
-const externalTable = aws_dynamodb.Table.fromTableName(
-  externalDataSourcesStack,
-  "MyExternalPostTable",
-  "PostTable"
+const externalSMBSourcesStack = backend.createStack("ExternalSMBSources");
+const externalSMBTable = aws_dynamodb.Table.fromTableName(
+	externalSMBSourcesStack,
+	"ExternalSMBTable",
+	"CynosSMBShares"
 );
-
 
 backend.data.addDynamoDbDataSource(
-  "ExternalPostTableDataSource",
-  externalTable
+	"ExternalSMBTableSource",
+	externalSMBTable
 );
-*/
+

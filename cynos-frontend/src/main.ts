@@ -192,6 +192,86 @@ function verifyWindow() {
 }
 
 
+/* ********************************************************** */
+/*
+ {
+     "ip": "10.12.212.22",
+     "hostname": "myfiles.grp.haufemg.com",
+     "last_seen": "01-01-2024",
+     "comment": "",
+     "known_host": false,
+     "cyber_comment": "",
+     "shares": {
+         "CIFS$": {
+             "SSRV_InfoSecShareScn": "READ_ONLY"
+         }
+     }
+ }
+*/
+async function smbWindow() {
+	const container = document.getElementById('app');
+
+	// Main table and header
+	const table = document.createElement('table');
+	table.id = "smbtable";
+	const thead = table.createTHead();
+	const headerRow = thead.insertRow();
+	
+	// Define the columns we want to show
+	const columns = [
+		"IP Address",
+		"Hostname",
+		"Last Seen",
+		"Comment",
+		"Known",
+		"Notes",
+		"#Shares"
+	];
+	
+	columns.forEach(text => {
+	    const th = document.createElement('th');
+	    th.textContent = text;
+	    headerRow.appendChild(th);
+	});
+	
+	// table body
+	const tbody = document.createElement('tbody');
+	table.appendChild(tbody);
+
+	// Retrieve Data
+	const client = generateClient<Schema>();
+
+	const { data, errors } = await client.queries.getSMBHosts();
+	//const { data, errors } = await client.models.SMBHost.list();
+	console.log("data: ", data)
+	console.log("errors: ", errors);
+	
+	// Rows
+	data.forEach(device => {
+	    const row = tbody.insertRow();
+	
+	    row.insertCell().textContent = device.ip;
+	    row.insertCell().textContent = device.hostname;
+	    row.insertCell().textContent = device.last_seen;
+	    row.insertCell().textContent = device.comment;
+	    row.insertCell().textContent = device.known_host ? "Yes" : "No";
+	    row.insertCell().textContent = device.cyber_comment;
+	    row.insertCell().textContent = device.shares.length;
+	
+	    // Using the color logic we discussed:
+	    /*
+	    const dateCell = row.insertCell();
+	    dateCell.textContent = device.last_seen;
+	    if (device.last_seen === "01-01-1970") {
+	        dateCell.style.color = "red";
+	        dateCell.style.fontWeight = "bold";
+	    }
+	    */
+	});
+	
+	// 4. Inject the finished table into the DOM
+	container.replaceChildren(table);
+}
 
 /* ********************************************************** */
 async function mainWindow(username) {
@@ -202,7 +282,7 @@ async function mainWindow(username) {
 	const parent = document.getElementById('app');
 
 	const h1 = document.createElement('h1');
-	h1.textContent = 'Cynos Summary';
+	h1.textContent = 'Summary';
 
 	var username = "unknown";
 	try {
@@ -240,7 +320,7 @@ async function mainWindow(username) {
 	rss_check_field.innerHTML = date.toLocaleString();
 
 	userNotification("OK", "test notification");
-	userNotification("ERROR", "test error");
+	//userNotification("ERROR", "test error");
 }
 
 function mk_link_navigation(path, text, highlight_path) {
@@ -287,6 +367,9 @@ async function routeAuthenticated(path: string) {
 	switch (path) {
 		case "/":
 			mainWindow(username);
+			break;
+		case "/smb":
+			smbWindow();
 			break;
 		default:
 			console.log("Unknown path: " + path);

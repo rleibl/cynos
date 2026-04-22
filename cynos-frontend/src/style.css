@@ -47,7 +47,9 @@
 }
 
 body {
-  margin: 0;
+  width: 1126px;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 h1,
@@ -80,9 +82,6 @@ p {
 }
 
 #app {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
   text-align: center;
   border-inline: 1px solid var(--border);
 /*  min-height: 100svh; */
@@ -93,14 +92,12 @@ p {
 }
 
 #navigation {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
   padding: 10px;
   text-align: left;
   border-inline: 1px solid var(--border);
   /* this css does not draw top and bottom borders
      for some reason. Add them manually */
+  border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   box-sizing: border-box;
 }
@@ -119,9 +116,6 @@ p {
 }
 
 #notifications {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
   padding: 5px;
   text-align: left;
   border-inline: 1px solid var(--border);
@@ -132,6 +126,28 @@ p {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+}
+
+#smbtable {
+    text-align: left;
+    /*border: 1px solid white;*/
+    border-collapse: collapse;
+}
+#smbtable td {
+    padding: 10px;
+}
+
+#smbtable th {
+    background-color: black;
+    padding: 13px 10px;
+}
+
+#smbtable tr:nth-child(even) {
+    background-color: var(--border);
+}
+#smbtable tr:hover {
+    background-color: var(--accent);
+    color: black;
 }
 
 #center {
