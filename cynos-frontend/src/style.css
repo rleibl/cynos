@@ -128,38 +128,60 @@ p {
   box-sizing: border-box;
 }
 
+/*
+ * SMB table
+ */
 #smbtable {
     text-align: left;
     /*border: 1px solid white;*/
     border-collapse: collapse;
 }
+.smbtable {
+}
+.smbtable tr:nth-child(4n+3) {
+    background-color: var(--border);
+}
 #smbtable td {
     padding: 10px;
-}
-
-#smbtable th {
-    background-color: black;
-    padding: 13px 10px;
-}
-
-#smbtable tr:nth-child(even) {
-    background-color: var(--border);
 }
 #smbtable tr:hover {
     background-color: var(--accent);
     color: black;
 }
+.smbsummaryheader {
+    background-color: black;
+    padding: 13px 10px;
+}
+/* 3, 7, 11, 15, 19, ...*/
 
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
+/*
+ * SMB Details
+ */
+.smbdetails {
+    border-collapse: collapse;
+}
+.smbdetails th {
+    color: black;
+    background-color: #888;
+    padding: 10px 7px;
+}
+.smbdetailsrow {
+    display: none;
+}
+.smbdetailscol {
+    background-color: #aaa;
+    color: #444;
+}
+/* 
+ * we need to set both even and uneven, otherwise
+ * this will inherit the nth-child from class .smbtable
+ */
+.smbdetails tr:nth-child(even) {
+    background-color: #999;
+}
+.smbdetails tr:nth-child(odd) {
+    background-color: #aaa;
+}
+.smbdetails tr:hover {
+    background-color: #aaa;
 }

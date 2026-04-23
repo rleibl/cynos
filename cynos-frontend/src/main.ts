@@ -13,6 +13,62 @@ import outputs from '../amplify_outputs.json';
 
 Amplify.configure(outputs);
 
+// Use this to not always query the dynamodb
+// for SMB shares.
+const EXAMPLE_SMB_SHARE_DATA = [{
+     "ip": "10.12.212.22",
+     "hostname": "myfiles.grp.haufemg.com",
+     "last_seen": "01-01-2024",
+     "comment": "",
+     "known_host": false,
+     "cyber_comment": "",
+     "shares": [
+	{
+	  "share": "CIFS$",
+	  "user": "SSRV_InfoSecShareScn",
+	  "privileges":"READ_ONLY"
+	}
+     ]
+     },{
+     "ip": "10.12.212.23",
+     "hostname": "myfiles.grp.haufemg.com",
+     "last_seen": "01-01-2024",
+     "comment": "",
+     "known_host": false,
+     "cyber_comment": "",
+     "shares": [
+	{
+	  "share": "CIFS$",
+	  "user": "SSRV_InfoSecShareScn",
+	  "privileges":"READ_ONLY"
+	},
+	{
+	  "share": "PUBLIC",
+	  "user": "SSRV_InfoSecShareScn",
+	  "privileges":"READ_WRITE"
+	},
+	{
+	  "share": "C$",
+	  "user": "SSRV_InfoSecShareScn",
+	  "privileges":"READ_WRITE"
+	}
+     ]
+     },{
+     "ip": "10.12.212.24",
+     "hostname": "myfiles.grp.haufemg.com",
+     "last_seen": "01-01-2024",
+     "comment": "",
+     "known_host": false,
+     "cyber_comment": "",
+     "shares": [
+	{
+	  "share": "CIFS$",
+	  "user": "SSRV_InfoSecShareScn",
+	  "privileges":"READ_ONLY"
+	}
+     ]
+ }];
+
 
 /* ********************************************************** */
 function userNotification(status, msg) {
@@ -201,19 +257,26 @@ function verifyWindow() {
      "comment": "",
      "known_host": false,
      "cyber_comment": "",
-     "shares": {
-         "CIFS$": {
-             "SSRV_InfoSecShareScn": "READ_ONLY"
-         }
-     }
+     "shares": [
+	{
+          "share": "CIFS$",
+	  "user": "SSRV_InfoSecShareScn",
+	  "privileges":"READ_ONLY"
+        }
+     ]
  }
 */
 async function smbWindow() {
 	const container = document.getElementById('app');
 
+	// Summary
+	const h2 = document.createElement('h2');
+	h2.innerText = "Summary";
+
 	// Main table and header
 	const table = document.createElement('table');
 	table.id = "smbtable";
+	table.className = "smbtable";
 	const thead = table.createTHead();
 	const headerRow = thead.insertRow();
 	
@@ -230,6 +293,7 @@ async function smbWindow() {
 	
 	columns.forEach(text => {
 	    const th = document.createElement('th');
+	    th.className = "smbsummaryheader";
 	    th.textContent = text;
 	    headerRow.appendChild(th);
 	});
@@ -241,14 +305,19 @@ async function smbWindow() {
 	// Retrieve Data
 	const client = generateClient<Schema>();
 
+	// demo data
+	//var errors = undefined;
+	//var data = EXAMPLE_SMB_SHARE_DATA;
+
 	const { data, errors } = await client.queries.getSMBHosts();
-	//const { data, errors } = await client.models.SMBHost.list();
 	console.log("data: ", data)
 	console.log("errors: ", errors);
 	
 	// Rows
 	data.forEach(device => {
 	    const row = tbody.insertRow();
+	    row.className = "smbsummaryrow";
+	    row.addEventListener("click", toggleSmbDetail);
 	
 	    row.insertCell().textContent = device.ip;
 	    row.insertCell().textContent = device.hostname;
@@ -267,10 +336,67 @@ async function smbWindow() {
 	        dateCell.style.fontWeight = "bold";
 	    }
 	    */
+	    const d_row = tbody.insertRow();
+	    d_row.className = "smbdetailsrow";
+	    const details = d_row.insertCell();
+	    details.className = "smbdetailscol";
+	    details.colSpan = columns.length;
+	    renderSmbDetails(details, device);
 	});
 	
 	// 4. Inject the finished table into the DOM
-	container.replaceChildren(table);
+	container.replaceChildren(h2, table);
+}
+
+function renderSmbDetails(target, device) {
+
+	const t = document.createElement('table');
+	t.className = "smbdetails";
+	const thead = t.createTHead();
+	const headerRow = thead.insertRow();
+
+	const headers = ["Share", "User", "Permissions"];
+
+	headers.forEach(text => {
+		const th = document.createElement("th");
+		th.textContent = text;
+		headerRow.appendChild(th);
+	});
+
+	const tbody = document.createElement('tbody');
+	t.appendChild(tbody);
+
+	device.shares.forEach(share => {
+		const row = tbody.insertRow();
+
+		row.insertCell().textContent = share.share;
+		row.insertCell().textContent = share.user;
+		row.insertCell().textContent = share.privileges;
+	});
+
+	target.appendChild(t);
+}
+
+function toggleSmbDetail(event) {
+
+	const row = event.target.closest('tr.smbsummaryrow');
+	if(!row) {
+		console.log("Could not find tr.smbsummaryrow");
+		return;
+	}
+
+	const detailsRow = row.nextElementSibling;
+	if(!detailsRow) {
+		console.log("Could not find detailsRow");
+		return;
+	}
+
+	if(detailsRow.style.display === "none" || 
+	   detailsRow.style.display === "" ) {
+		detailsRow.style.display = "table-row";
+	} else {
+		detailsRow.style.display = "none";
+	}
 }
 
 /* ********************************************************** */
