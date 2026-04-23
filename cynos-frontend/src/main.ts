@@ -521,6 +521,7 @@ async function routeAuthenticated(path: string) {
 			mainWindow(userid);
 			break;
 		case "/smb":
+		case "/smb/":
 			smbWindow();
 			break;
 		default:
@@ -538,14 +539,17 @@ var u = new URL(window.location.href);
 const path = u.pathname;
 switch (path) {
 	case '/login':
+	case '/login/':
 		console.log("Routing: /login");
 		loginWindow();
 		break;
 	case '/register':
+	case '/register/':
 		console.log("Routing: /register");
 		registerWindow();
 		break;
 	case '/verify':
+	case '/verify/':
 		console.log("Routing: /verify");
 		verifyWindow();
 		break;
