@@ -104,15 +104,33 @@ async function checkUser() {
 /* ********************************************************** */
 async function loginWindow() {
     var h = `
-    <h1>Login to Cynos</h1>
+    <h1>Login</h1>
     <form id="loginform">
-      <label htmlFor="email">Email:</label>
-      <input type="text" id="email" name="email" /><br>
-      <label htmlFor="password">Password:</label>
-      <input type="password" id="password" name="password" /><br>
-      <input type="submit" />
+      <table style="margin-left: auto; margin-right: auto;">
+        <tr>
+          <td>
+            <label htmlFor="email">Email:</label>
+          </td>
+          <td>
+            <input type="text" id="email" name="email" /><br>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <label htmlFor="password">Password:</label>
+          </td>
+          <td>
+            <input type="password" id="password" name="password" /><br>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+          </td>
+        </tr>
+      </table>
+    <input type="submit" value="Login" />
     </form>
-    <a href="/register">Don't have an account? Register here</a>`
+    <a href="/register" style="font-size: smaller">Don't have an account? Register here</a>`
     document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
 
     var form = document.getElementById('loginform');
