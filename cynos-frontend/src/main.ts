@@ -1,5 +1,5 @@
 import { generateClient } from "aws-amplify/data";
-import type { Schema } from "../amplify/data/resources";
+import type { Schema } from "../amplify/data/resource.ts";
 import './style.css'
 import { Amplify } from "aws-amplify";
 
@@ -135,15 +135,17 @@ async function loginWindow() {
 
     var form = document.getElementById('loginform');
     form.addEventListener('submit', async function (event) {
-	    event.preventDefault()
-    	    email = document.getElementById('email').value;
-	    password = document.getElementById('password').value;
+	    event.preventDefault();
+        var el = document.getElementById('email')as HTMLInputElement;
+    	var email = el.value;
+        el = document.getElementById('password') as HTMLInputElement;
+	    var password = el.value;
 	    const { nextStep } = await signIn({
 		    username: email,
 		    password: password,
 		    options: {
 			    authFlowType: 'USER_PASSWORD_AUTH',
-			    preferredChallenge: 'PASSWORT'
+			    preferredChallenge: 'PASSWORD'
 		    }
 	    });
 	    if (nextStep.signInStep === 'DONE') {
@@ -151,35 +153,38 @@ async function loginWindow() {
 		    window.location.replace("/");
 	    } else {
 		    console.log("Login failed: "+nextStep.signInStep);
-		    userNotification("Login failed");
+		    userNotification("ERROR", "Login failed");
 	    }
     });
 }
 
 /* ********************************************************** */
 async function register(event) {
-	event.preventDefault()
-	var email = document.getElementById('email').value;
-	var password = document.getElementById('password').value;
+	event.preventDefault();
+    var el = document.getElementById('email') as HTMLInputElement;
+	var email = el.value;
+    el = document.getElementById('password') as HTMLInputElement;
+	var password = el.value;
 	//console.log(email, password);
 
-	const { isSignUpComplete, userId, nextStep } = await signUp({
+	//const { isSignUpComplete, userId, nextStep } = await signUp({
+	const { nextStep: signUpNextStep } = await signUp({
 		username: email,
 		password: password,
 		options: {
 			userAttributes: {
-      				email: email
-    			},
+      			email: email
+    		},
   		}
 	});
-	if (nextStep == "DONE") {
+	if (signUpNextStep.signUpStep == "DONE") {
 		// Registering requires entering a code sent via email.
 		// The registration process cannot be done.
 		alert("Registering in state DONE. Should require verification code");
 		return;
-	} else if (nextStep == "COMPLETE_AUTO_SIGN_IN") {
+	} else if (signUpNextStep.signUpStep == "COMPLETE_AUTO_SIGN_IN") {
 		alert("Well this is awkward. Auto sign in was returned. I can't do that");
-	} else if (nextStep == "CONFIRM_SIGN_UP") {
+	} else if (signUpNextStep.signUpStep == "CONFIRM_SIGN_UP") {
 		// this should be default.
 		// A code has been sent via email. Show verification pane.
 	}
@@ -192,11 +197,12 @@ async function register(event) {
   	  <input type="text" id="verifycode" />
 	  <input type="submit" />
 	</form>`
-    	document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
+    document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
 
-    	var form = document.getElementById("verifyForm");
+    var form = document.getElementById("verifyForm");
 	form.addEventListener('submit', function (event) {
-		var code = document.getElementById('verifycode').value;
+		var el = document.getElementById('verifycode') as HTMLInputElement;
+        var code = el.value;
 		verifyUser(event, email, code)
 	});
 }
@@ -254,14 +260,16 @@ function verifyWindow() {
   	  <input type="text" id="verifycode" />
 	  <input type="submit" />
 	</form>`
-    	document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
+    document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
 
-    	var form = document.getElementById("verifyForm");
-	form.addEventListener('submit', function (event) {
-		var code = document.getElementById('verifycode').value;
-		var email = document.getElementById('email').value;
-		verifyUser(event, email, code) 
-	});
+    var form = document.getElementById("verifyForm");
+    form.addEventListener('submit', function (event) {
+        var el = document.getElementById('verifycode') as HTMLInputElement;
+        var code = el.value;
+        el = document.getElementById('email') as HTMLInputElement;
+        var email = el.value;
+        verifyUser(event, email, code) 
+    });
 
 }
 
@@ -327,7 +335,7 @@ async function smbWindow() {
 	//var errors = undefined;
 	//var data = EXAMPLE_SMB_SHARE_DATA;
 
-	const { data, errors } = await client.queries.getSMBHosts();
+	const { data, errors } = await client.queries.getSMBHosts({});
 	console.log("data: ", data)
 	console.log("errors: ", errors);
 	
@@ -343,7 +351,7 @@ async function smbWindow() {
 	    row.insertCell().textContent = device.comment;
 	    row.insertCell().textContent = device.known_host ? "Yes" : "No";
 	    row.insertCell().textContent = device.cyber_comment;
-	    row.insertCell().textContent = device.shares.length;
+	    row.insertCell().textContent = String(device.shares.length);
 	
 	    // Using the color logic we discussed:
 	    /*
@@ -418,7 +426,7 @@ function toggleSmbDetail(event) {
 }
 
 /* ********************************************************** */
-async function mainWindow(username) {
+async function mainWindow(userid) {
 
 	/* ****************** Page setup ******************** */
 
@@ -429,10 +437,10 @@ async function mainWindow(username) {
 	h1.textContent = 'Summary';
 
 	var username = "unknown";
-	try {
-    		const attributes = await fetchUserAttributes();
-		console.log("User attributes: ", attributes);
-		username = attributes['email'];
+    try {
+        const attributes = await fetchUserAttributes();
+        console.log("User attributes: ", attributes);
+        username = attributes['email'];
   	} catch (err) {
     		console.log(err);
 	}
@@ -455,7 +463,7 @@ async function mainWindow(username) {
 
 	const rss_check_field = document.getElementById("rsslastcheck");
 
-	const { data, errors } = await client.queries.getRss();
+	const { data, errors } = await client.queries.getRss({});
 	console.log("data: ", data)
 	console.log("errors: ", errors);
 
@@ -500,7 +508,7 @@ async function navigation(path) {
 /* ********************************************************** */
 async function routeAuthenticated(path: string) {
 
-	var [loggedin, username] = await checkUser();
+	var [loggedin, userid] = await checkUser();
 	if (!loggedin) {
 		loginWindow();
 		return;
@@ -510,14 +518,14 @@ async function routeAuthenticated(path: string) {
 
 	switch (path) {
 		case "/":
-			mainWindow(username);
+			mainWindow(userid);
 			break;
 		case "/smb":
 			smbWindow();
 			break;
 		default:
 			console.log("Unknown path: " + path);
-			mainWindow(username);
+			mainWindow(userid);
 			
 	}
 }
