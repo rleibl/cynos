@@ -1,15 +1,17 @@
 :root {
   --text: #6b6375;
   --text-h: #08060d;
-  --bg: #fff;
+  --bg: #002887; /* HG Blue */
   --border: #e5e4e7;
-  --code-bg: #f4f3ec;
   --accent: #aa3bff;
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --hg-grey: #B9BEB4; /* HG Grey */
+  --hg-light-grey: #ebebe7;
+  --hg-deep-blue: #001e55;
+  --hg-lime: #d2ff5a;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -18,7 +20,7 @@
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
   color-scheme: light dark;
-  color: var(--text);
+  color: var(--hg-deep-blue);
   background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -34,13 +36,11 @@
   :root {
     --text: #9ca3af;
     --text-h: #f3f4f6;
-    --bg: #16171d;
+    --bg: #002887;
     --border: #2e303a;
-    --code-bg: #1f2028;
     --accent: #c084fc;
     --accent-bg: rgba(192, 132, 252, 0.15);
     --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
@@ -56,7 +56,6 @@ h1,
 h2 {
   font-family: var(--heading);
   font-weight: 500;
-  color: var(--text-h);
 }
 
 h1 {
@@ -81,7 +80,12 @@ p {
   margin: 0;
 }
 
+#header {
+    color: var(--hg-lime);
+}
+
 #app {
+  background: var(--hg-light-grey);
   text-align: center;
   border-inline: 1px solid var(--border);
 /*  min-height: 100svh; */
@@ -94,12 +98,7 @@ p {
 #navigation {
   padding: 10px;
   text-align: left;
-  border-inline: 1px solid var(--border);
-  /* this css does not draw top and bottom borders
-     for some reason. Add them manually */
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  box-sizing: border-box;
+  color: var(--hg-light-grey);
 }
 #navigation a {
   text-decoration: none;
@@ -133,33 +132,27 @@ p {
  */
 #smbtable {
     text-align: left;
-    /*border: 1px solid white;*/
     border-collapse: collapse;
 }
-.smbtable {
+#smbtable th {
+    background: var(--hg-deep-blue);
+    color: var(--hg-lime);
 }
 
-/* alternating colors with details enabled 
-.smbtable tr:nth-child(4n+3) {
-    background-color: var(--border);
-}
-*/
-
-.smbtable tr:nth-child(even) {
-    background-color: var(--border);
+#smbtable tr:nth-child(even) {
+    background-color: var(--hg-grey);
 }
 #smbtable td {
     padding: 10px;
 }
 #smbtable tr:hover {
-    background-color: var(--accent);
+    background-color: var(--hg-lime);
     color: black;
 }
 .smbsummaryheader {
     background-color: black;
     padding: 13px 10px;
 }
-/* 3, 7, 11, 15, 19, ...*/
 
 /*
  * SMB Details
