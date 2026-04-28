@@ -25,30 +25,31 @@ const schema = a.schema({
       })
     ),
 
+/*
   SMBShare: a.customType({
 	  share: a.string(),
 	  user: a.string(),
 	  privileges: a.string(),
   }),
+*/
 
-  SMBHost: a.customType({
-     ip: a.string(),            // 10.12.212.22
+  SMBShare: a.customType({
      hostname: a.string(),      // "myfiles.grp.haufemg.com"
+     share_name: a.string(),    // "Public$"
+     ip: a.string(),            // 10.12.212.22
+	 user: a.string(),
+	 privileges: a.string(),
      last_seen: a.string(),     // "01-01-2024"
+     first_seen: a.string(),    // "01-01-2024"
      comment: a.string(),       // ""
      known_host: a.boolean(),   // false
      cyber_comment: a.string(), // ""
-     shares: a.ref("SMBShare").array() 
-   }),
-
-   SMBHostContainer: a.customType({
-	   hosts: a.json()
    }),
 
    getSMBHosts: a
        .query()
        .arguments({})
-       .returns(a.ref("SMBHost").array())
+       .returns(a.ref("SMBShare").array())
        .authorization(allow => [allow.publicApiKey()])
        .handler(
          a.handler.custom({

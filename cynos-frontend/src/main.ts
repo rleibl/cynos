@@ -308,13 +308,14 @@ async function smbWindow() {
 	
 	// Define the columns we want to show
 	const columns = [
-		"IP Address",
 		"Hostname",
+        "Share",
+        "Privileges",
+		"IP Address",
 		"Last Seen",
 		"Comment",
 		"Known",
-		"Notes",
-		"#Shares"
+		"Analyst Notes"
 	];
 	
 	columns.forEach(text => {
@@ -345,13 +346,14 @@ async function smbWindow() {
 	    row.className = "smbsummaryrow";
 	    row.addEventListener("click", toggleSmbDetail);
 	
-	    row.insertCell().textContent = device.ip;
 	    row.insertCell().textContent = device.hostname;
+	    row.insertCell().textContent = device.share_name;
+	    row.insertCell().textContent = device.privileges;
+	    row.insertCell().textContent = device.ip;
 	    row.insertCell().textContent = device.last_seen;
 	    row.insertCell().textContent = device.comment;
 	    row.insertCell().textContent = device.known_host ? "Yes" : "No";
 	    row.insertCell().textContent = device.cyber_comment;
-	    row.insertCell().textContent = String(device.shares.length);
 	
 	    // Using the color logic we discussed:
 	    /*
@@ -362,12 +364,15 @@ async function smbWindow() {
 	        dateCell.style.fontWeight = "bold";
 	    }
 	    */
+
+        /* SMB Details
 	    const d_row = tbody.insertRow();
 	    d_row.className = "smbdetailsrow";
 	    const details = d_row.insertCell();
 	    details.className = "smbdetailscol";
 	    details.colSpan = columns.length;
 	    renderSmbDetails(details, device);
+        */
 	});
 	
 	// 4. Inject the finished table into the DOM
