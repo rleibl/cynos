@@ -347,7 +347,10 @@ async function smbWindow() {
 	    row.addEventListener("click", toggleSmbDetail);
 	
 	    row.insertCell().textContent = device.hostname;
-	    row.insertCell().textContent = device.share_name;
+        const share_link = document.createElement('a');
+        share_link.href = '\\\\' + device.hostname + '\\' + device.share_name;
+        share_link.textContent = device.share_name
+	    row.insertCell().appendChild(share_link);
 	    row.insertCell().textContent = device.privileges;
 	    row.insertCell().textContent = device.ip;
 	    row.insertCell().textContent = device.last_seen;

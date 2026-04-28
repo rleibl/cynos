@@ -139,6 +139,9 @@ p {
     color: var(--hg-lime);
 }
 
+#smbtable a {
+    color: var(--hg-dark-grey);
+}
 #smbtable tr:nth-child(even) {
     background-color: var(--hg-grey);
 }
@@ -149,6 +152,8 @@ p {
     background-color: var(--hg-lime);
     color: black;
 }
+
+
 .smbsummaryheader {
     background-color: black;
     padding: 13px 10px;
