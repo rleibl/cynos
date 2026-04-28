@@ -348,7 +348,8 @@ async function smbWindow() {
 	
 	    row.insertCell().textContent = device.hostname;
         const share_link = document.createElement('a');
-        share_link.href = '\\\\' + device.hostname + '\\' + device.share_name;
+        //share_link.href = '\\\\' + device.hostname + '\\' + device.share_name;
+        share_link.href = 'file://' + device.hostname + '/' + device.share_name;
         share_link.textContent = device.share_name
 	    row.insertCell().appendChild(share_link);
 	    row.insertCell().textContent = device.privileges;
