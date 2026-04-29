@@ -25,14 +25,6 @@ const schema = a.schema({
       })
     ),
 
-/*
-  SMBShare: a.customType({
-	  share: a.string(),
-	  user: a.string(),
-	  privileges: a.string(),
-  }),
-*/
-
   SMBShare: a.customType({
      hostname: a.string(),      // "myfiles.grp.haufemg.com"
      share_name: a.string(),    // "Public$"

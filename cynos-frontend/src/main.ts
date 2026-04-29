@@ -13,63 +13,6 @@ import outputs from '../amplify_outputs.json';
 
 Amplify.configure(outputs);
 
-// Use this to not always query the dynamodb
-// for SMB shares.
-const EXAMPLE_SMB_SHARE_DATA = [{
-     "ip": "10.12.212.22",
-     "hostname": "myfiles.grp.haufemg.com",
-     "last_seen": "01-01-2024",
-     "comment": "",
-     "known_host": false,
-     "cyber_comment": "",
-     "shares": [
-	{
-	  "share": "CIFS$",
-	  "user": "SSRV_InfoSecShareScn",
-	  "privileges":"READ_ONLY"
-	}
-     ]
-     },{
-     "ip": "10.12.212.23",
-     "hostname": "myfiles.grp.haufemg.com",
-     "last_seen": "01-01-2024",
-     "comment": "",
-     "known_host": false,
-     "cyber_comment": "",
-     "shares": [
-	{
-	  "share": "CIFS$",
-	  "user": "SSRV_InfoSecShareScn",
-	  "privileges":"READ_ONLY"
-	},
-	{
-	  "share": "PUBLIC",
-	  "user": "SSRV_InfoSecShareScn",
-	  "privileges":"READ_WRITE"
-	},
-	{
-	  "share": "C$",
-	  "user": "SSRV_InfoSecShareScn",
-	  "privileges":"READ_WRITE"
-	}
-     ]
-     },{
-     "ip": "10.12.212.24",
-     "hostname": "myfiles.grp.haufemg.com",
-     "last_seen": "01-01-2024",
-     "comment": "",
-     "known_host": false,
-     "cyber_comment": "",
-     "shares": [
-	{
-	  "share": "CIFS$",
-	  "user": "SSRV_InfoSecShareScn",
-	  "privileges":"READ_ONLY"
-	}
-     ]
- }];
-
-
 /* ********************************************************** */
 function userNotification(status, msg) {
 
@@ -332,10 +275,6 @@ async function smbWindow() {
 
 	// Retrieve Data
 	const client = generateClient<Schema>();
-
-	// demo data
-	//var errors = undefined;
-	//var data = EXAMPLE_SMB_SHARE_DATA;
 
 	const { data, errors } = await client.queries.getSMBHosts({});
 	console.log("data: ", data)
