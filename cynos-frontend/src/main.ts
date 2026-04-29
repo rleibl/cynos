@@ -348,7 +348,7 @@ async function smbWindow() {
 	    row.addEventListener("click", toggleSmbDetail);
 	
         const i = document.createElement("img");
-        i.src = "src/copy24.png";
+        i.src = "/copy24.png";
         i.addEventListener("click", async function() {
                 const l = "\\\\" + device.hostname + "\\" + device.share_name;  
                 try {
