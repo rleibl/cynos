@@ -308,6 +308,7 @@ async function smbWindow() {
 	
 	// Define the columns we want to show
 	const columns = [
+        "", // copy to clipboard icon
 		"Hostname",
         "Share",
         "Privileges",
@@ -346,12 +347,20 @@ async function smbWindow() {
 	    row.className = "smbsummaryrow";
 	    row.addEventListener("click", toggleSmbDetail);
 	
+        const i = document.createElement("img");
+        i.src = "src/copy24.png";
+        i.addEventListener("click", async function() {
+                const l = "\\\\" + device.hostname + "\\" + device.share_name;  
+                try {
+                    await navigator.clipboard.writeText(l);
+                    console.log("Copy to clipboard");
+                } catch (err) {
+                    console.log("Failed to copy text");
+                }
+        });
+        row.insertCell().appendChild(i);
 	    row.insertCell().textContent = device.hostname;
-        const share_link = document.createElement('a');
-        //share_link.href = '\\\\' + device.hostname + '\\' + device.share_name;
-        share_link.href = 'file://' + device.hostname + '/' + device.share_name;
-        share_link.textContent = device.share_name
-	    row.insertCell().appendChild(share_link);
+	    row.insertCell().textContent = device.share_name;
 	    row.insertCell().textContent = device.privileges;
 	    row.insertCell().textContent = device.ip;
 	    row.insertCell().textContent = device.last_seen;
