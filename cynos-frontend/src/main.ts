@@ -315,7 +315,7 @@ async function smbWindow() {
 		"IP Address",
 		"Last Seen",
 		"Comment",
-		"Known",
+		"Status",
 		"Analyst Notes"
 	];
 	
@@ -347,9 +347,12 @@ async function smbWindow() {
 	    row.className = "smbsummaryrow";
 	    row.addEventListener("click", toggleSmbDetail);
 	
+        // icon to copy the smb url to clipboard
         const i = document.createElement("img");
         i.src = "/copy24.png";
         i.addEventListener("click", async function() {
+                event.preventDefault();
+                event.stopPropagation();
                 const l = "\\\\" + device.hostname + "\\" + device.share_name;  
                 try {
                     await navigator.clipboard.writeText(l);
@@ -357,6 +360,7 @@ async function smbWindow() {
                 } catch (err) {
                     console.log("Failed to copy text");
                 }
+                return false;
         });
         row.insertCell().appendChild(i);
 	    row.insertCell().textContent = device.hostname;
@@ -365,30 +369,18 @@ async function smbWindow() {
 	    row.insertCell().textContent = device.ip;
 	    row.insertCell().textContent = device.last_seen;
 	    row.insertCell().textContent = device.comment;
-	    row.insertCell().textContent = device.known_host ? "Yes" : "No";
-	    row.insertCell().textContent = device.cyber_comment;
-	
-	    // Using the color logic we discussed:
-	    /*
-	    const dateCell = row.insertCell();
-	    dateCell.textContent = device.last_seen;
-	    if (device.last_seen === "01-01-1970") {
-	        dateCell.style.color = "red";
-	        dateCell.style.fontWeight = "bold";
-	    }
-	    */
+	    row.insertCell().textContent = device.cyber_status || "unknown";
+        row.insertCell().textContent = device.cyber_comment;
 
-        /* SMB Details
+        /* SMB Details */
 	    const d_row = tbody.insertRow();
 	    d_row.className = "smbdetailsrow";
 	    const details = d_row.insertCell();
 	    details.className = "smbdetailscol";
 	    details.colSpan = columns.length;
 	    renderSmbDetails(details, device);
-        */
 	});
 	
-	// 4. Inject the finished table into the DOM
 	container.replaceChildren(h2, table);
 }
 
@@ -396,29 +388,49 @@ function renderSmbDetails(target, device) {
 
 	const t = document.createElement('table');
 	t.className = "smbdetails";
-	const thead = t.createTHead();
-	const headerRow = thead.insertRow();
-
-	const headers = ["Share", "User", "Permissions"];
-
-	headers.forEach(text => {
-		const th = document.createElement("th");
-		th.textContent = text;
-		headerRow.appendChild(th);
-	});
-
 	const tbody = document.createElement('tbody');
 	t.appendChild(tbody);
 
-	device.shares.forEach(share => {
-		const row = tbody.insertRow();
+    var row = tbody.insertRow();
+    row.insertCell().textContent = "First Seen";
+    row.insertCell().textContent = device.first_seen;
+    row = tbody.insertRow();
+    row.insertCell().textContent = "Last Seen";
+    row.insertCell().textContent = device.last_seen;
 
-		row.insertCell().textContent = share.share;
-		row.insertCell().textContent = share.user;
-		row.insertCell().textContent = share.privileges;
-	});
+    row = tbody.insertRow();
+    row.insertCell().textContent = "Status";
+    row.insertCell().appendChild(createStatusDropdown(device.status));
 
-	target.appendChild(t);
+    row = tbody.insertRow();
+    row.insertCell().textContent = "Analyst Comment";
+    const c = document.createElement('span');
+    c.textContent = device.cyber_comment === "" ? "click to edit" : device.cyber_comment;
+    c.style.fontStyle = 'italic';
+    row.insertCell().appendChild(c);
+
+    target.appendChild(t);
+}
+
+function createStatusDropdown(currentValue) {
+    const values = ["new", "verified", "action needed"];
+
+    const select = document.createElement('select');
+    select.className = "status-dropdown"; // For CSS styling
+
+    values.forEach(val => {
+        const option = document.createElement('option');
+        option.value = val;
+        option.textContent = val;
+
+        if (val === currentValue) {
+            option.selected = true;
+        }
+
+        select.appendChild(option);
+    });
+
+    return select;
 }
 
 function toggleSmbDetail(event) {

@@ -10,6 +10,8 @@
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
   --hg-grey: #B9BEB4; /* HG Grey */
   --hg-light-grey: #ebebe7;
+  --hg-light-blue: #b4d2ff;
+  --hg-mid-blue: #649be1;
   --hg-deep-blue: #001e55;
   --hg-lime: #d2ff5a;
 
@@ -130,21 +132,21 @@ p {
     text-align: left;
     border-collapse: collapse;
 }
-#smbtable th {
+.smbtable th {
     background: var(--hg-deep-blue);
     color: var(--hg-lime);
 }
 
-#smbtable a {
+.smbtable a {
     color: var(--hg-dark-grey);
 }
-#smbtable tr:nth-child(even) {
+.smbtable tr:nth-child(4n+3) {
     background-color: var(--hg-grey);
 }
-#smbtable td {
+.smbtable td {
     padding: 10px;
 }
-#smbtable tr:hover {
+.smbtable tr:hover {
     background-color: var(--hg-lime);
     color: black;
 }
@@ -163,26 +165,23 @@ p {
 }
 .smbdetails th {
     color: black;
-    background-color: #888;
+    background: var(--hg-light-blue);
     padding: 10px 7px;
 }
 .smbdetailsrow {
     display: none;
 }
 .smbdetailscol {
-    background-color: #aaa;
+    background: var(--hg-light-blue);
     color: #444;
 }
 /* 
  * we need to set both even and uneven, otherwise
  * this will inherit the nth-child from class .smbtable
  */
-.smbdetails tr:nth-child(even) {
-    background-color: #999;
-}
-.smbdetails tr:nth-child(odd) {
-    background-color: #aaa;
+.smbdetails tr:nth-child(n) {
+    background-color: var(--hg-light-blue);
 }
 .smbdetails tr:hover {
-    background-color: #aaa;
+    background-color: var(--hg-light-blue);
 }

@@ -42,7 +42,7 @@ const schema = a.schema({
      last_seen: a.string(),     // "01-01-2024"
      first_seen: a.string(),    // "01-01-2024"
      comment: a.string(),       // ""
-     known_host: a.boolean(),   // false
+     cyber_status: a.string(),   // false
      cyber_comment: a.string(), // ""
    }),
 
