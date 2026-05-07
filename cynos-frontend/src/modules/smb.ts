@@ -81,9 +81,9 @@ function renderTable() {
 	    row.insertCell().textContent = device.privileges || "unknown";
 	    row.insertCell().textContent = device.ip || "unknown";
 	    row.insertCell().textContent = device.last_seen || "unknown";
-	    row.insertCell().textContent = device.comment || "unknown";
+	    row.insertCell().textContent = device.comment || "";
 	    row.insertCell().textContent = device.cyber_status || "unknown";
-        row.insertCell().textContent = device.cyber_comment || "unknown";
+        row.insertCell().textContent = device.cyber_comment || "";
 
         /* SMB Details */
 	    const d_row = tbody.insertRow();
