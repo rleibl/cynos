@@ -4,76 +4,50 @@ import type { Schema } from "../../amplify/data/resource.ts";
 import { userNotification } from "./notifications.ts";
 
 /* ********************************************************** */
-/*
- {
-     "ip": "10.12.212.22",
-     "hostname": "myfiles.grp.haufemg.com",
-     "last_seen": "01-01-2024",
-     "comment": "",
-     "known_host": false,
-     "cyber_comment": "",
-     "shares": [
-	{
-          "share": "CIFS$",
-	  "user": "SSRV_InfoSecShareScn",
-	  "privileges":"READ_ONLY"
-        }
-     ]
- }
-*/
+/* globals                                                    */
 /* ********************************************************** */
-export async function smbWindow() {
-	const container = document.getElementById('app') as HTMLDivElement;
 
-	// Summary
-	const h2 = document.createElement('h2');
-	h2.innerText = "Summary";
+// must be global to be accessible when rendering the table and re-rendering after filtering
+var gblShares: any[] = [];
 
-	// Main table and header
-	const table = document.createElement('table');
-	table.id = "smbtable";
-	table.className = "smbtable";
-	const thead = table.createTHead();
-	const headerRow = thead.insertRow();
+// must be global to be accessible in multiple functions and consistent with the table header
+const gblColumns: string[] = [
+    "", // copy to clipboard icon
+    "Hostname",
+    "Share",
+    "Privileges",
+    "IP Address",
+    "Last Seen",
+    "Comment",
+    "Status",
+    "Analyst Notes"
+];
 	
-	// Define the columns we want to show
-	const columns = [
-        "", // copy to clipboard icon
-		"Hostname",
-        "Share",
-        "Privileges",
-		"IP Address",
-		"Last Seen",
-		"Comment",
-		"Status",
-		"Analyst Notes"
-	];
-	
-	columns.forEach(text => {
-	    const th = document.createElement('th');
-	    th.className = "smbsummaryheader";
-	    th.textContent = text;
-	    headerRow.appendChild(th);
-	});
-	
-	// table body
-	const tbody = document.createElement('tbody');
-	table.appendChild(tbody);
 
-	// Retrieve Data
-	const client = generateClient<Schema>();
+/* ********************************************************** */
+function renderTable() {
+    const tbody = document.getElementById("smbtablebody") as HTMLTableSectionElement; // for access when re-rendering the table
+    tbody.replaceChildren(); // clear existing rows
 
-	const { data, errors } = await client.queries.getSMBHosts({});
+    const filteredDevices = gblShares.filter(device => {
 
-	if (errors) {
-		console.log("Error fetching SMB hosts: ", errors);
-		userNotification("ERROR", "Failed to fetch SMB hosts");
-		return;
-	}
-	console.log("data: ", data)
-	
-	const devices = data || [];
-	devices.forEach(device => {
+        // filter for status first
+        const statusFilter = (document.getElementById("statusFilter") as HTMLSelectElement).value;
+        if(statusFilter !== "all" && device.cyber_status !== statusFilter) {
+            return false;
+        }
+
+        // then filter for search term: hostname, share name and IP are included
+        const searchTerm = (document.getElementById("searchInput") as HTMLInputElement).value.toLowerCase();
+        if(searchTerm) {
+            const combined = (device.hostname + " " + device.share_name + " " + device.ip).toLowerCase();
+            return combined.includes(searchTerm);
+        }
+
+        return true;
+    });
+
+	filteredDevices.forEach(device => {
 		if(!device) {return;}
 
 	    const row = tbody.insertRow();
@@ -110,11 +84,96 @@ export async function smbWindow() {
 	    d_row.className = "smbdetailsrow";
 	    const details = d_row.insertCell();
 	    details.className = "smbdetailscol";
-	    details.colSpan = columns.length;
+	    details.colSpan = gblColumns.length;
 	    renderSmbDetails(details, device);
 	});
+}
+
+/* ********************************************************** */
+function renderSummaryAndFilter() {
+    const filterDiv = document.createElement('div');
+    filterDiv.className = "summary-filter";
+
+    const searchLabel = document.createElement('label');
+    searchLabel.htmlFor = "searchInput";
+    searchLabel.textContent = "Search: ";
+
+    const searchInput = document.createElement('input');
+    searchInput.type = "text";
+    searchInput.id = "searchInput";
+    searchInput.placeholder = "Hostname, share or IP";
+    searchInput.addEventListener("input", function () { renderTable(); });
+
+    filterDiv.appendChild(searchLabel);
+    filterDiv.appendChild(searchInput);
+    
+    const filterLabel = document.createElement('label');
+    filterLabel.htmlFor = "statusFilter";
+    filterLabel.textContent = "Filter by status: ";
+
+    const filterSelect = document.createElement('select');
+    filterSelect.id = "statusFilter";
+    filterSelect.addEventListener("change", function () { renderTable(); });
+
+    const filterOptions = ["all", "new", "verified", "action needed"];
+    filterOptions.forEach(optionValue => {
+        const option = document.createElement('option');
+        option.value = optionValue;
+        option.textContent = optionValue.charAt(0).toUpperCase() + optionValue.slice(1);
+        filterSelect.appendChild(option);
+    });
+
+    filterDiv.appendChild(filterLabel);
+    filterDiv.appendChild(filterSelect);
+
+    return filterDiv;
+}
+
+/* ********************************************************** */
+export async function smbWindow() {
+	const container = document.getElementById('app') as HTMLDivElement;
+
+	// Summary
+	const h2 = document.createElement('h2');
+	h2.innerText = "Summary";
+
+    // Summary and filter
+    const filterDiv = renderSummaryAndFilter();
+
+	// Main table and header
+	const table = document.createElement('table');
+	table.id = "smbtable";
+	table.className = "smbtable";
+	const thead = table.createTHead();
+	const headerRow = thead.insertRow();
 	
-	container.replaceChildren(h2, table);
+	gblColumns.forEach(text => {
+	    const th = document.createElement('th');
+	    th.className = "smbsummaryheader";
+	    th.textContent = text;
+	    headerRow.appendChild(th);
+	});
+
+	// table body
+	const tbody = document.createElement('tbody');
+    tbody.id = "smbtablebody"; // for access when re-rendering the table
+	table.appendChild(tbody);
+
+	container.replaceChildren(h2, filterDiv, table);
+	
+	const client = generateClient<Schema>();
+	const { data, errors } = await client.queries.getSMBHosts({});
+
+	if (errors) {
+		console.log("Error fetching SMB hosts: ", errors);
+		userNotification("ERROR", "Failed to fetch SMB hosts");
+		return;
+	}
+	console.log("data: ", data)
+	
+	gblShares = data || [];
+    renderTable();
+	
 }
 
 function renderSmbDetails(target : HTMLTableCellElement, device : any) {
