@@ -22,6 +22,12 @@ const gblColumns: string[] = [
     "Status",
     "Analyst Notes"
 ];
+
+const gblStatusValues: string[] = [
+    "new",
+    "verified",
+    "action needed"
+];
 	
 
 /* ********************************************************** */
@@ -115,8 +121,7 @@ function renderSummaryAndFilter() {
     filterSelect.id = "statusFilter";
     filterSelect.addEventListener("change", function () { renderTable(); });
 
-    const filterOptions = ["all", "new", "verified", "action needed"];
-    filterOptions.forEach(optionValue => {
+    ["all", ...gblStatusValues].forEach(optionValue => {
         const option = document.createElement('option');
         option.value = optionValue;
         option.textContent = optionValue.charAt(0).toUpperCase() + optionValue.slice(1);
@@ -196,21 +201,67 @@ function renderSmbDetails(target : HTMLTableCellElement, device : any) {
 
     row = tbody.insertRow();
     row.insertCell().textContent = "Analyst Comment";
+    const commentCell = row.insertCell();
     const c = document.createElement('span');
-    c.textContent = device.cyber_comment === "" ? "click to edit" : device.cyber_comment;
+    c.textContent = device.cyber_comment ? device.cyber_comment : "click to edit";
     c.style.fontStyle = 'italic';
-    row.insertCell().appendChild(c);
+    c.style.cursor = 'pointer';
+
+    const renderDisplay = () => {
+        c.textContent = device.cyber_comment ? device.cyber_comment : "click to edit";
+        commentCell.replaceChildren(c);
+    };
+
+    const saveComment = (newValue: string) => {
+        device.cyber_comment = newValue.trim();
+        renderDisplay();
+    };
+
+    const renderEditor = () => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = device.cyber_comment || "";
+
+        const saveButton = document.createElement('button');
+        saveButton.type = 'button';
+        saveButton.textContent = 'save';
+
+        const save = () => saveComment(input.value);
+
+        saveButton.addEventListener('click', (event: Event) => {
+            event.stopPropagation();
+            save();
+        });
+
+        input.addEventListener('keydown', (event: KeyboardEvent) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                event.stopPropagation();
+                save();
+            }
+        });
+
+        commentCell.replaceChildren(input, saveButton);
+        input.focus();
+    };
+
+    c.addEventListener('click', (event: Event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        renderEditor();
+    });
+
+    commentCell.appendChild(c);
 
     target.appendChild(t);
 }
 
 function createStatusDropdown(currentValue: string) {
-    const values = ["new", "verified", "action needed"];
 
     const select = document.createElement('select');
     select.className = "status-dropdown"; // For CSS styling
 
-    values.forEach(val => {
+    gblStatusValues.forEach(val => {
         const option = document.createElement('option');
         option.value = val;
         option.textContent = val;
