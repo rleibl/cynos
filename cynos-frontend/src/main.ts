@@ -14,7 +14,7 @@ import outputs from '../amplify_outputs.json';
 Amplify.configure(outputs);
 
 /* ********************************************************** */
-function userNotification(status, msg) {
+function userNotification(status: "ERROR" | "OK" | "INFO", msg: string) {
 
 	var s = document.createElement('span');
 	if( status == "ERROR" ) {
@@ -25,7 +25,7 @@ function userNotification(status, msg) {
 
 	s.textContent = msg;
 
-	const parent = document.getElementById('notifications');
+	const parent = document.getElementById('notifications') as HTMLDivElement;
 	parent.replaceChildren(s);
 }
 
@@ -76,7 +76,7 @@ async function loginWindow() {
     <a href="/register" style="font-size: smaller">Don't have an account? Register here</a>`
     document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
 
-    var form = document.getElementById('loginform');
+    var form = document.getElementById('loginform') as HTMLFormElement;
     form.addEventListener('submit', async function (event) {
 	    event.preventDefault();
         var el = document.getElementById('email')as HTMLInputElement;
@@ -102,7 +102,7 @@ async function loginWindow() {
 }
 
 /* ********************************************************** */
-async function register(event) {
+async function register(event: Event) {
 	event.preventDefault();
     var el = document.getElementById('email') as HTMLInputElement;
 	var email = el.value;
@@ -142,7 +142,7 @@ async function register(event) {
 	</form>`
     document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
 
-    var form = document.getElementById("verifyForm");
+    var form = document.getElementById("verifyForm") as HTMLFormElement;
 	form.addEventListener('submit', function (event) {
 		var el = document.getElementById('verifycode') as HTMLInputElement;
         var code = el.value;
@@ -163,12 +163,12 @@ function registerWindow() {
 	</form>`
     document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
 
-    var form = document.getElementById("registerForm");
+    var form = document.getElementById("registerForm") as HTMLFormElement;
     form.addEventListener('submit', register);
 }
 
 /* ********************************************************** */
-async function verifyUser(event, email, code) {
+async function verifyUser(event: Event, email: string, code: string) {
 	event.preventDefault();
 
 	console.log(email);
@@ -205,7 +205,7 @@ function verifyWindow() {
 	</form>`
     document.querySelector<HTMLDivElement>('#app')!.innerHTML = h;
 
-    var form = document.getElementById("verifyForm");
+    var form = document.getElementById("verifyForm") as HTMLFormElement;
     form.addEventListener('submit', function (event) {
         var el = document.getElementById('verifycode') as HTMLInputElement;
         var code = el.value;
@@ -236,7 +236,7 @@ function verifyWindow() {
  }
 */
 async function smbWindow() {
-	const container = document.getElementById('app');
+	const container = document.getElementById('app') as HTMLDivElement;
 
 	// Summary
 	const h2 = document.createElement('h2');
@@ -277,11 +277,18 @@ async function smbWindow() {
 	const client = generateClient<Schema>();
 
 	const { data, errors } = await client.queries.getSMBHosts({});
+
+	if (errors) {
+		console.log("Error fetching SMB hosts: ", errors);
+		userNotification("ERROR", "Failed to fetch SMB hosts");
+		return;
+	}
 	console.log("data: ", data)
-	console.log("errors: ", errors);
 	
-	// Rows
-	data.forEach(device => {
+	const devices = data || [];
+	devices.forEach(device => {
+		if(!device) {return;}
+
 	    const row = tbody.insertRow();
 	    row.className = "smbsummaryrow";
 	    row.addEventListener("click", toggleSmbDetail);
@@ -289,9 +296,9 @@ async function smbWindow() {
         // icon to copy the smb url to clipboard
         const i = document.createElement("img");
         i.src = "/copy24.png";
-        i.addEventListener("click", async function() {
-                event.preventDefault();
-                event.stopPropagation();
+        i.addEventListener("click", async function(e: Event) {
+                e.preventDefault();
+                e.stopPropagation();
                 const l = "\\\\" + device.hostname + "\\" + device.share_name;  
                 try {
                     await navigator.clipboard.writeText(l);
@@ -302,14 +309,14 @@ async function smbWindow() {
                 return false;
         });
         row.insertCell().appendChild(i);
-	    row.insertCell().textContent = device.hostname;
-	    row.insertCell().textContent = device.share_name;
-	    row.insertCell().textContent = device.privileges;
-	    row.insertCell().textContent = device.ip;
-	    row.insertCell().textContent = device.last_seen;
-	    row.insertCell().textContent = device.comment;
+	    row.insertCell().textContent = device.hostname || "unknown";
+	    row.insertCell().textContent = device.share_name || "unknown";
+	    row.insertCell().textContent = device.privileges || "unknown";
+	    row.insertCell().textContent = device.ip || "unknown";
+	    row.insertCell().textContent = device.last_seen || "unknown";
+	    row.insertCell().textContent = device.comment || "unknown";
 	    row.insertCell().textContent = device.cyber_status || "unknown";
-        row.insertCell().textContent = device.cyber_comment;
+        row.insertCell().textContent = device.cyber_comment || "unknown";
 
         /* SMB Details */
 	    const d_row = tbody.insertRow();
@@ -323,7 +330,7 @@ async function smbWindow() {
 	container.replaceChildren(h2, table);
 }
 
-function renderSmbDetails(target, device) {
+function renderSmbDetails(target : HTMLTableCellElement, device : any) {
 
 	const t = document.createElement('table');
 	t.className = "smbdetails";
@@ -332,10 +339,10 @@ function renderSmbDetails(target, device) {
 
     var row = tbody.insertRow();
     row.insertCell().textContent = "First Seen";
-    row.insertCell().textContent = device.first_seen;
+    row.insertCell().textContent = device.first_seen || "unknown";
     row = tbody.insertRow();
     row.insertCell().textContent = "Last Seen";
-    row.insertCell().textContent = device.last_seen;
+    row.insertCell().textContent = device.last_seen || "unknown";
 
     row = tbody.insertRow();
     row.insertCell().textContent = "Status";
@@ -351,7 +358,7 @@ function renderSmbDetails(target, device) {
     target.appendChild(t);
 }
 
-function createStatusDropdown(currentValue) {
+function createStatusDropdown(currentValue: string) {
     const values = ["new", "verified", "action needed"];
 
     const select = document.createElement('select');
@@ -372,15 +379,15 @@ function createStatusDropdown(currentValue) {
     return select;
 }
 
-function toggleSmbDetail(event) {
+function toggleSmbDetail(event: Event) {
 
-	const row = event.target.closest('tr.smbsummaryrow');
+	const row = (event.target as HTMLElement).closest('tr.smbsummaryrow');
 	if(!row) {
 		console.log("Could not find tr.smbsummaryrow");
 		return;
 	}
 
-	const detailsRow = row.nextElementSibling;
+	const detailsRow = row.nextElementSibling as HTMLTableRowElement;
 	if(!detailsRow) {
 		console.log("Could not find detailsRow");
 		return;
@@ -395,12 +402,12 @@ function toggleSmbDetail(event) {
 }
 
 /* ********************************************************** */
-async function mainWindow(userid) {
+async function mainWindow(userid: string) {
 
 	/* ****************** Page setup ******************** */
 
 	// Get parent
-	const parent = document.getElementById('app');
+	const parent = document.getElementById('app') as HTMLDivElement;
 
 	const h1 = document.createElement('h1');
 	h1.textContent = 'Summary';
@@ -409,7 +416,7 @@ async function mainWindow(userid) {
     try {
         const attributes = await fetchUserAttributes();
         console.log("User attributes: ", attributes);
-        username = attributes['email'];
+        username = attributes['email'] || "unknown";
   	} catch (err) {
     		console.log(err);
 	}
@@ -430,13 +437,17 @@ async function mainWindow(userid) {
 
 	const client = generateClient<Schema>();
 
-	const rss_check_field = document.getElementById("rsslastcheck");
+	const rss_check_field = document.getElementById("rsslastcheck") as HTMLSpanElement;
 
 	const { data, errors } = await client.queries.getRss({});
+	if (errors) {
+		console.log("Error fetching RSS data: ", errors);
+		userNotification("ERROR", "Failed to fetch RSS data");
+		return;
+	}
 	console.log("data: ", data)
-	console.log("errors: ", errors);
 
-	const unixTimestamp = data['t'];
+	const unixTimestamp = data ? data['t'] || 0 : 0;
 	const date = new Date(unixTimestamp * 1000);
 	rss_check_field.innerHTML = date.toLocaleString();
 
@@ -444,7 +455,7 @@ async function mainWindow(userid) {
 	//userNotification("ERROR", "test error");
 }
 
-function mk_link_navigation(path, text, highlight_path) {
+function mk_link_navigation(path: string, text: string, highlight_path: string) {
 	const l = document.createElement('a');
 	l.href = path;
 	l.textContent = text
@@ -457,9 +468,9 @@ function mk_link_navigation(path, text, highlight_path) {
 	return l;
 }
 /* ********************************************************** */
-async function navigation(path) {
+async function navigation(path: string) {
 
-	var parent = document.getElementById('navigation');
+	var parent = document.getElementById('navigation') as HTMLDivElement;
 
 	const lhome = mk_link_navigation('/', "home", path);
 	const lalerts = mk_link_navigation('/alerts', "Alerts", path);
@@ -478,7 +489,7 @@ async function navigation(path) {
 async function routeAuthenticated(path: string) {
 
 	var [loggedin, userid] = await checkUser();
-	if (!loggedin) {
+	if (!loggedin || typeof userid !== "string") {
 		loginWindow();
 		return;
 	}
