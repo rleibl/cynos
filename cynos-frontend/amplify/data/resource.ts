@@ -29,8 +29,8 @@ const schema = a.schema({
      hostname: a.string(),      // "myfiles.grp.haufemg.com"
      share_name: a.string(),    // "Public$"
      ip: a.string(),            // 10.12.212.22
-	 user: a.string(),
-	 privileges: a.string(),
+     user: a.string(),
+     privileges: a.string(),
      last_seen: a.string(),     // "01-01-2024"
      first_seen: a.string(),    // "01-01-2024"
      comment: a.string(),       // ""
@@ -38,16 +38,16 @@ const schema = a.schema({
      cyber_comment: a.string(), // ""
    }),
 
-   getSMBHosts: a
+   getSMBShares: a
        .query()
        .arguments({})
        .returns(a.ref("SMBShare").array())
        .authorization(allow => [allow.publicApiKey()])
        .handler(
          a.handler.custom({
-	    dataSource: "ExternalSMBTableSource",
-	    entry: "./getSMBHosts.js"
-	 })
+        dataSource: "ExternalSMBTableSource",
+        entry: "./getSMBShares.js"
+     })
        )
 });
 

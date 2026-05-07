@@ -167,11 +167,11 @@ export async function smbWindow() {
 	container.replaceChildren(h2, filterDiv, table);
 	
 	const client = generateClient<Schema>();
-	const { data, errors } = await client.queries.getSMBHosts({});
+	const { data, errors } = await client.queries.getSMBShares({});
 
 	if (errors) {
-		console.log("Error fetching SMB hosts: ", errors);
-		userNotification("ERROR", "Failed to fetch SMB hosts");
+		console.log("Error fetching SMB shares: ", errors);
+		userNotification("ERROR", "Failed to fetch SMB shares");
 		return;
 	}
 	console.log("data: ", data)
