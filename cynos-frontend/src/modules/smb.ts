@@ -181,6 +181,7 @@ export async function smbWindow() {
 	
 }
 
+/* ********************************************************** */
 function renderSmbDetails(target : HTMLTableCellElement, device : any) {
 
 	const t = document.createElement('table');
@@ -197,11 +198,18 @@ function renderSmbDetails(target : HTMLTableCellElement, device : any) {
 
     row = tbody.insertRow();
     row.insertCell().textContent = "Status";
-    row.insertCell().appendChild(createStatusDropdown(device.status));
+    row.insertCell().appendChild(createStatusDropdown(device));
 
     row = tbody.insertRow();
     row.insertCell().textContent = "Analyst Comment";
-    const commentCell = row.insertCell();
+    row.insertCell().appendChild(createCommentCell(device));
+
+    target.appendChild(t);
+}
+
+/* ********************************************************** */
+function createCommentCell(device: any) {
+    const commentCell = document.createElement('td');
     const c = document.createElement('span');
     c.textContent = device.cyber_comment ? device.cyber_comment : "click to edit";
     c.style.fontStyle = 'italic';
@@ -212,7 +220,19 @@ function renderSmbDetails(target : HTMLTableCellElement, device : any) {
         commentCell.replaceChildren(c);
     };
 
-    const saveComment = (newValue: string) => {
+    const saveComment = async (newValue: string) => {
+        const client = generateClient<Schema>();
+        const { data, errors } = await client.mutations.setSMBShare({
+            hostname: device.hostname,
+            share_name: device.share_name,
+            cyber_comment: newValue.trim()
+        });
+        if (errors) {
+            console.log("Error saving comment: ", errors);
+            userNotification("ERROR", "Failed to save comment");
+            return;
+        }
+        console.log("data: ", data);
         device.cyber_comment = newValue.trim();
         renderDisplay();
     };
@@ -253,11 +273,13 @@ function renderSmbDetails(target : HTMLTableCellElement, device : any) {
 
     commentCell.appendChild(c);
 
-    target.appendChild(t);
+    return commentCell;
 }
 
-function createStatusDropdown(currentValue: string) {
+/* ********************************************************** */
+function createStatusDropdown(device: any) {
 
+    const currentValue = device.cyber_status || "unknown";
     const select = document.createElement('select');
     select.className = "status-dropdown"; // For CSS styling
 
@@ -272,10 +294,29 @@ function createStatusDropdown(currentValue: string) {
 
         select.appendChild(option);
     });
+    select.addEventListener('change', async (event: Event) => {
+        const newValue = (event.target as HTMLSelectElement).value;
+        const client = generateClient<Schema>();
+        const { data, errors } = await client.mutations.setSMBShare({
+            hostname: device.hostname,
+            share_name: device.share_name,
+            cyber_status: newValue
+        });
+        if (errors) {
+            console.log("Error updating status: ", errors);
+            userNotification("ERROR", "Failed to update status");
+            // revert to old value in case of error
+            (event.target as HTMLSelectElement).value = currentValue;
+            return;
+        }
+        console.log("data: ", data);
+        device.cyber_status = newValue;
+    });
 
     return select;
 }
 
+/* ********************************************************** */
 function toggleSmbDetail(event: Event) {
 
 	const row = (event.target as HTMLElement).closest('tr.smbsummaryrow');

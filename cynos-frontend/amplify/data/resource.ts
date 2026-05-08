@@ -42,6 +42,23 @@ const schema = a.schema({
                 dataSource: "ExternalSMBTableSource",
                 entry: "./getSMBShares.js"
             })
+        ),
+
+    setSMBShare: a
+        .mutation()
+        .arguments({
+            hostname: a.string(),
+            share_name: a.string(),
+            cyber_status: a.string(),
+            cyber_comment: a.string(),
+        })
+        .returns(a.ref("SMBShare"))
+        .authorization(allow => [allow.publicApiKey()])
+        .handler(
+            a.handler.custom({
+                dataSource: "ExternalSMBTableSource",
+                entry: "./setSMBShare.js"
+            })
         )
     });
 
