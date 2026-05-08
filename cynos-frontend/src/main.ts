@@ -98,6 +98,14 @@ function mk_link_navigation(path: string, text: string, highlight_path: string) 
 
 	return l;
 }
+
+function normalizePath(path: string) {
+	if (path.length > 1 && path.endsWith('/')) {
+		return path.slice(0, -1);
+	}
+	return path;
+}
+
 /* ********************************************************** */
 async function navigation(path: string) {
 
@@ -118,6 +126,7 @@ async function navigation(path: string) {
 }
 /* ********************************************************** */
 async function routeAuthenticated(path: string) {
+	const normalizedPath = normalizePath(path);
 
 	var [loggedin, userid] = await checkUser();
 	if (!loggedin || typeof userid !== "string") {
@@ -125,18 +134,19 @@ async function routeAuthenticated(path: string) {
 		return;
 	}
 
-	navigation(path);
+	navigation(normalizedPath);
 
-	switch (path) {
+	switch (normalizedPath) {
 		case "/":
 			mainWindow(userid);
 			break;
 		case "/smb":
-		case "/smb/":
-			smbWindow();
+		case "/smb/shares":
+		case "/smb/log":
+			smbWindow(normalizedPath);
 			break;
 		default:
-			console.log("Unknown path: " + path);
+			console.log("Unknown path: " + normalizedPath);
 			mainWindow(userid);
 			
 	}
@@ -147,20 +157,17 @@ async function routeAuthenticated(path: string) {
  * **********************************************************/
 var u = new URL(window.location.href);
 
-const path = u.pathname;
+const path = normalizePath(u.pathname);
 switch (path) {
 	case '/login':
-	case '/login/':
 		console.log("Routing: /login");
 		loginWindow();
 		break;
 	case '/register':
-	case '/register/':
 		console.log("Routing: /register");
 		registerWindow();
 		break;
 	case '/verify':
-	case '/verify/':
 		console.log("Routing: /verify");
 		verifyWindow();
 		break;

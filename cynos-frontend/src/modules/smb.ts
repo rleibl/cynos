@@ -135,12 +135,47 @@ function renderSummaryAndFilter() {
 }
 
 /* ********************************************************** */
-export async function smbWindow() {
+export async function smbWindow(path: string) {
+
+    const nav = document.getElementById('appnav') as HTMLDivElement;
+    const sharesLink = document.createElement('a');
+    sharesLink.href = '/smb/shares';
+    sharesLink.textContent = 'Shares';
+
+    const logLink = document.createElement('a');
+    logLink.href = '/smb/log';
+    logLink.textContent = 'Log';
+
+    nav.replaceChildren(sharesLink, document.createTextNode(' | '), logLink);
+
+    switch (path) {
+        case "/smb":
+        case "/smb/shares":
+            smbSharesWindow();
+            break;
+        case "/smb/log":
+            smbLogWindow();
+            break;
+        default:
+            console.log("Unknown SMB path: " + path);
+            smbSharesWindow();
+    }
+}
+/* ********************************************************** */
+export async function smbLogWindow() {
+    const container = document.getElementById('app') as HTMLDivElement;
+    const h2 = document.createElement('h2');
+    h2.innerText = "SMB Log";
+    container.replaceChildren(h2);
+}
+
+/* ********************************************************** */
+export async function smbSharesWindow() {
 	const container = document.getElementById('app') as HTMLDivElement;
 
 	// Summary
 	const h2 = document.createElement('h2');
-	h2.innerText = "Summary";
+	h2.innerText = "Shares";
 
     // Summary and filter
     const filterDiv = renderSummaryAndFilter();
