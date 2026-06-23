@@ -28,6 +28,19 @@ AWS Console
          -> Enable "ALLOW_USER_PASSWORD_AUTH"
 ```
 
+# Testing for deployment
+Before pushing into github, it is advised to run the deployment build process
+manually. Otherwise the build may fail on AWS Amplify and has to be debugged
+there. This can be anoying, especially when there are (stacked) Typescript
+errors.
+
+To run the deployment build locally
+```
+cd cynos-frontend
+npm ci
+npm run build
+```
+
 # Project creation
 This is for reference.
 ```bash
