@@ -59,7 +59,24 @@ const schema = a.schema({
                 dataSource: "ExternalSMBTableSource",
                 entry: "./setSMBShare.js"
             })
-        )
+        ),
+
+    SMBLogEntry: a.customType({
+        timestamp: a.string(),
+        message: a.string(),
+    }),
+
+    getSMBLog: a
+        .query()
+        .arguments({})
+        .returns(a.ref("SMBLogEntry").array())
+        .authorization(allow => [allow.publicApiKey()])
+        .handler(
+            a.handler.custom({
+                dataSource: "ExternalSMBLogTableSource",
+                entry: "./getSMBLog.js"
+            })
+        ),
     });
 
 export type Schema = ClientSchema<typeof schema>;

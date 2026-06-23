@@ -151,6 +151,13 @@ p {
     color: black;
 }
 
+#smblogtable {
+    text-align: left;
+    border-collapse: collapse;
+}
+#smblogtable tr:nth-child(even) {
+    background-color: var(--hg-grey);
+}
 
 .smbsummaryheader {
     background-color: black;

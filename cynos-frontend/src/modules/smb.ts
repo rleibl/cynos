@@ -166,7 +166,56 @@ export async function smbLogWindow() {
     const container = document.getElementById('app') as HTMLDivElement;
     const h2 = document.createElement('h2');
     h2.innerText = "SMB Log";
-    container.replaceChildren(h2);
+
+    const table = document.createElement('table');
+    table.id = "smblogtable";
+    const thead = table.createTHead();
+    const headerRow = thead.insertRow();
+    ["Timestamp", "Message"].forEach(text => {
+        const th = document.createElement('th');
+        th.textContent = text;
+        headerRow.appendChild(th);
+    });
+
+    const tbody = document.createElement('tbody');
+    table.appendChild(tbody);
+    container.appendChild(table);
+
+    const client = generateClient<Schema>();
+    const { data, errors } = await client.queries.getSMBLog({});
+    if (errors) {
+        console.log("Error fetching SMB log: ", errors);
+        userNotification("ERROR", "Failed to fetch SMB log");
+        return;
+    }
+    console.log("data: ", data);
+    const lines = data || [];
+    // sort lines by timestamp descending. The timestamp is a string, so we need to convert it to a number for proper sorting.
+    // the format of the timestamp is DD-MM-YYYY hh:mm:ss 
+    lines.sort((a, b) => {
+        const parseTimestamp = (dateStr: string) => {
+            const [datePart, timePart] = dateStr.split(' ');
+            const [day, month, year] = datePart.split('-');
+            const dayNum = parseInt(day, 10);
+            const monthNum = parseInt(month, 10);
+            const yearNum = parseInt(year, 10);
+            const [hours, minutes, seconds] = timePart.split(':');
+            return new Date(yearNum, monthNum - 1, dayNum, parseInt(hours), parseInt(minutes), parseInt(seconds)).getTime();
+        };
+        const bnn = b?.timestamp ? parseTimestamp(b.timestamp) : 0;
+        const ann = a?.timestamp ? parseTimestamp(a.timestamp) : 0;
+        return bnn - ann;
+    });
+    lines.forEach(entry => {
+        if(!entry) { return; }
+        const row = tbody.insertRow();
+        row.insertCell().textContent = entry.timestamp || "unknown";
+        var m = entry.message || "";
+        m = m.replaceAll("\n", "<br>");
+        row.insertCell().innerHTML = m;
+    });
+
+    container.replaceChildren(h2, table);
 }
 
 /* ********************************************************** */

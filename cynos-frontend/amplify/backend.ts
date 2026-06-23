@@ -36,3 +36,13 @@ backend.data.addDynamoDbDataSource(
 	externalSMBTable
 );
 
+const externalSMBLogTable = aws_dynamodb.Table.fromTableName(
+	externalSMBSourcesStack,
+	"ExternalSMBLogTable",
+	"CynosSMBLog"
+);
+
+backend.data.addDynamoDbDataSource(
+	"ExternalSMBLogTableSource",
+	externalSMBLogTable
+);
