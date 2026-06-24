@@ -126,31 +126,69 @@ p {
 }
 
 /*
- * SMB table
+ * Default table in Haufe Colors
  */
-#smbtable {
+#haufe-table {
     text-align: left;
     border-collapse: collapse;
 }
-.smbtable th {
+#haufe-table th {
     background: var(--hg-deep-blue);
     color: var(--hg-lime);
 }
 
-.smbtable a {
+#haufe-table a {
     color: var(--hg-dark-grey);
 }
-.smbtable tr:nth-child(4n+3) {
+#haufe-table tr:nth-child(4n+3) {
     background-color: var(--hg-grey);
 }
-.smbtable td {
+#haufe-table td {
     padding: 10px;
 }
-.smbtable tr:hover {
+#haufe-table tr:hover {
     background-color: var(--hg-lime);
     color: black;
 }
+.haufe-table-summaryheader {
+    background-color: black;
+    padding: 13px 10px;
+}
+/*
+ * Details 
+ *
+ * Default table is supposed to use expanded rows, but we need to hide them by default. The user can click on the row to expand it.
+ */
+.haufe-table-details {
+    border-collapse: collapse;
+}
+.haufe-table-details th {
+    color: black;
+    background: var(--hg-light-blue);
+    padding: 10px 7px;
+}
+.haufe-table-details-row {
+    display: none;
+}
+.haufe-table-details-col {
+    background: var(--hg-light-blue);
+    color: #444;
+}
+/* 
+ * we need to set both even and uneven, otherwise
+ * this will inherit the nth-child from class .smbtable
+ */
+.haufe-table-details tr:nth-child(n) {
+    background-color: var(--hg-light-blue);
+}
+.haufe-table-details tr:hover {
+    background-color: var(--hg-light-blue);
+}
 
+/*
+ * The log tables does not have expandable rows, so we need to use a different
+ * nth-child selector to get the right background color for even rows.
+ */
 #smblogtable {
     text-align: left;
     border-collapse: collapse;
@@ -159,36 +197,4 @@ p {
     background-color: var(--hg-grey);
 }
 
-.smbsummaryheader {
-    background-color: black;
-    padding: 13px 10px;
-}
 
-/*
- * SMB Details
- */
-.smbdetails {
-    border-collapse: collapse;
-}
-.smbdetails th {
-    color: black;
-    background: var(--hg-light-blue);
-    padding: 10px 7px;
-}
-.smbdetailsrow {
-    display: none;
-}
-.smbdetailscol {
-    background: var(--hg-light-blue);
-    color: #444;
-}
-/* 
- * we need to set both even and uneven, otherwise
- * this will inherit the nth-child from class .smbtable
- */
-.smbdetails tr:nth-child(n) {
-    background-color: var(--hg-light-blue);
-}
-.smbdetails tr:hover {
-    background-color: var(--hg-light-blue);
-}

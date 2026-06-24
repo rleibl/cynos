@@ -32,7 +32,7 @@ const gblStatusValues: string[] = [
 
 /* ********************************************************** */
 function renderTable() {
-    const tbody = document.getElementById("smbtablebody") as HTMLTableSectionElement; // for access when re-rendering the table
+    const tbody = document.getElementById("haufe-table-body") as HTMLTableSectionElement; // for access when re-rendering the table
     tbody.replaceChildren(); // clear existing rows
 
     const filteredDevices = gblShares.filter(device => {
@@ -57,7 +57,7 @@ function renderTable() {
 		if(!device) {return;}
 
 	    const row = tbody.insertRow();
-	    row.className = "smbsummaryrow";
+	    row.className = "haufe-table-row";
 	    row.addEventListener("click", toggleSmbDetail);
 	
         // icon to copy the smb url to clipboard
@@ -87,9 +87,9 @@ function renderTable() {
 
         /* SMB Details */
 	    const d_row = tbody.insertRow();
-	    d_row.className = "smbdetailsrow";
+	    d_row.className = "haufe-table-details-row";
 	    const details = d_row.insertCell();
-	    details.className = "smbdetailscol";
+	    details.className = "haufe-table-details-col";
 	    details.colSpan = gblColumns.length;
 	    renderSmbDetails(details, device);
 	});
@@ -98,7 +98,7 @@ function renderTable() {
 /* ********************************************************** */
 function renderSummaryAndFilter() {
     const filterDiv = document.createElement('div');
-    filterDiv.className = "summary-filter";
+    filterDiv.className = "haufe-table-summaryheader";
 
     const searchLabel = document.createElement('label');
     searchLabel.htmlFor = "searchInput";
@@ -231,21 +231,21 @@ export async function smbSharesWindow() {
 
 	// Main table and header
 	const table = document.createElement('table');
-	table.id = "smbtable";
-	table.className = "smbtable";
+	table.id = "haufe-table";
+	table.className = "haufe-table";
 	const thead = table.createTHead();
 	const headerRow = thead.insertRow();
 	
 	gblColumns.forEach(text => {
 	    const th = document.createElement('th');
-	    th.className = "smbsummaryheader";
+	    th.className = "haufe-table-summaryheader";
 	    th.textContent = text;
 	    headerRow.appendChild(th);
 	});
 
 	// table body
 	const tbody = document.createElement('tbody');
-    tbody.id = "smbtablebody"; // for access when re-rendering the table
+    tbody.id = "haufe-table-body"; // for access when re-rendering the table
 	table.appendChild(tbody);
 
 	container.replaceChildren(h2, filterDiv, table);
@@ -269,13 +269,14 @@ export async function smbSharesWindow() {
 function renderSmbDetails(target : HTMLTableCellElement, device : any) {
 
 	const t = document.createElement('table');
-	t.className = "smbdetails";
+	t.className = "haufe-table-details";
 	const tbody = document.createElement('tbody');
 	t.appendChild(tbody);
 
     var row = tbody.insertRow();
     row.insertCell().textContent = "First Seen";
     row.insertCell().textContent = device.first_seen || "unknown";
+
     row = tbody.insertRow();
     row.insertCell().textContent = "Last Seen";
     row.insertCell().textContent = device.last_seen || "unknown";
@@ -365,7 +366,7 @@ function createStatusDropdown(device: any) {
 
     const currentValue = device.cyber_status || "unknown";
     const select = document.createElement('select');
-    select.className = "status-dropdown"; // For CSS styling
+    //select.className = "status-dropdown"; // For CSS styling
 
     gblStatusValues.forEach(val => {
         const option = document.createElement('option');
@@ -403,9 +404,9 @@ function createStatusDropdown(device: any) {
 /* ********************************************************** */
 function toggleSmbDetail(event: Event) {
 
-	const row = (event.target as HTMLElement).closest('tr.smbsummaryrow');
+	const row = (event.target as HTMLElement).closest('tr.haufe-table-row') as HTMLTableRowElement;
 	if(!row) {
-		console.log("Could not find tr.smbsummaryrow");
+		console.log("Could not find tr.haufe-table-row");
 		return;
 	}
 
