@@ -77,7 +77,40 @@ const schema = a.schema({
                 entry: "./getSMBLog.js"
             })
         ),
-    });
+
+    DomainscanResult: a.customType({
+        items: a.ref("DomainscanItem").array(),
+        lastEvaluatedKey: a.string(),
+    }),
+    
+    DomainscanItem: a.customType({
+        domain: a.string(),
+        ip: a.string(),
+        classification: a.string(),
+        organization: a.string(),
+        source: a.string(),
+        screenshot: a.string(),
+        last_seen: a.string(),     // "01-01-2024"
+        first_seen: a.string(),    // "01-01-2024"
+        cyber_status: a.string(),   // false
+        cyber_comment: a.string(), // ""
+    }),
+
+    getDomainscanResults: a
+        .query()
+        .arguments({
+            limit: a.integer(),
+            lastEvaluatedKey: a.string()
+        })
+        .returns(a.ref("DomainscanResult"))
+        .authorization(allow => [allow.publicApiKey()])
+        .handler(
+            a.handler.custom({
+                dataSource: "ExternalDomainscanResultsTableSource",
+                entry: "./getDomainscanResults.js"
+            })
+        ),
+});
 
 export type Schema = ClientSchema<typeof schema>;
 

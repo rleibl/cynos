@@ -13,6 +13,7 @@ export const backend = defineBackend({
 
 const externalDataSourcesStack = backend.createStack("ExternalDataSources");
 
+// Settings
 const externalTable = aws_dynamodb.Table.fromTableName(
 	externalDataSourcesStack,
 	"ExternalDataTable",
@@ -24,6 +25,7 @@ backend.data.addDynamoDbDataSource(
 	externalTable
 );
 
+// SMB
 const externalSMBSourcesStack = backend.createStack("ExternalSMBSources");
 const externalSMBTable = aws_dynamodb.Table.fromTableName(
 	externalSMBSourcesStack,
@@ -45,4 +47,17 @@ const externalSMBLogTable = aws_dynamodb.Table.fromTableName(
 backend.data.addDynamoDbDataSource(
 	"ExternalSMBLogTableSource",
 	externalSMBLogTable
+);
+
+// Domain Scan
+const externalDomainscanStack = backend.createStack("ExternalDomainscanStack");
+const externalDomainscanResults = aws_dynamodb.Table.fromTableName(
+	externalDomainscanStack,
+	"ExternalDomainscanResultsTable",
+	"CynosDomainScan"
+);
+
+backend.data.addDynamoDbDataSource(
+	"ExternalDomainscanResultsTableSource",
+	externalDomainscanResults
 );

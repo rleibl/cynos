@@ -11,6 +11,7 @@ import { registerWindow } from "./modules/authentication.ts";
 import { verifyWindow } from "./modules/authentication.ts";
 import { userNotification } from "./modules/notifications.ts";
 import { smbWindow } from "./modules/smb.ts";
+import { domainScanWindow } from "./modules/domainscan.ts";
 
 import outputs from '../amplify_outputs.json';
 
@@ -114,13 +115,16 @@ async function navigation(path: string) {
 	const lhome = mk_link_navigation('/', "home", path);
 	const lalerts = mk_link_navigation('/alerts', "Alerts", path);
 	const lsmb = mk_link_navigation('/smb', "SMB", path);
+	const ldomainscan = mk_link_navigation('/domainscan', "Domain Scan", path);
 
 	var content = [
 		lhome,
 		" | ",
 		lalerts,
 		" | ",
-		lsmb
+		lsmb,
+		" | ",
+		ldomainscan
 	];
 	parent.replaceChildren(...content);
 }
@@ -144,6 +148,9 @@ async function routeAuthenticated(path: string) {
 		case "/smb/shares":
 		case "/smb/log":
 			smbWindow(normalizedPath);
+			break;
+		case "/domainscan":
+			domainScanWindow(normalizedPath);
 			break;
 		default:
 			console.log("Unknown path: " + normalizedPath);
