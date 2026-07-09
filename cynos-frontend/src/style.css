@@ -179,7 +179,7 @@ p {
  * this will inherit the nth-child from class .smbtable
  */
 .haufe-table-details tr:nth-child(n) {
-    background-color: var(--hg-light-blue);
+    background-color: var(--hg-light-blue) !important;
 }
 .haufe-table-details tr:hover {
     background-color: var(--hg-light-blue);
