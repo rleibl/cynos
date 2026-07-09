@@ -26,9 +26,8 @@ backend.data.addDynamoDbDataSource(
 );
 
 // SMB
-const externalSMBSourcesStack = backend.createStack("ExternalSMBSources");
 const externalSMBTable = aws_dynamodb.Table.fromTableName(
-	externalSMBSourcesStack,
+	externalDataSourcesStack,
 	"ExternalSMBTable",
 	"CynosSMBShares"
 );
@@ -39,7 +38,7 @@ backend.data.addDynamoDbDataSource(
 );
 
 const externalSMBLogTable = aws_dynamodb.Table.fromTableName(
-	externalSMBSourcesStack,
+	externalDataSourcesStack,
 	"ExternalSMBLogTable",
 	"CynosSMBLog"
 );
@@ -50,9 +49,8 @@ backend.data.addDynamoDbDataSource(
 );
 
 // Domain Scan
-const externalDomainscanStack = backend.createStack("ExternalDomainscanStack");
 const externalDomainscanResults = aws_dynamodb.Table.fromTableName(
-	externalDomainscanStack,
+	externalDataSourcesStack,
 	"ExternalDomainscanResultsTable",
 	"CynosDomainScan"
 );
@@ -60,4 +58,16 @@ const externalDomainscanResults = aws_dynamodb.Table.fromTableName(
 backend.data.addDynamoDbDataSource(
 	"ExternalDomainscanResultsTableSource",
 	externalDomainscanResults
+);
+
+// DNS Zombie
+const externalDnsZombieResults = aws_dynamodb.Table.fromTableName(
+	externalDataSourcesStack,
+	"ExternalDnsZombieResultsTable",
+	"CynosDNZombie"
+);
+
+backend.data.addDynamoDbDataSource(
+	"ExternalDnsZombieResultsTableSource",
+	externalDnsZombieResults
 );

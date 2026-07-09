@@ -110,6 +110,47 @@ const schema = a.schema({
                 entry: "./getDomainscanResults.js"
             })
         ),
+
+    DnsZombieItem: a.customType({
+        name: a.string(),
+        values: a.string().array(),
+        issue_id: a.string(),
+        asset_id: a.string(),
+        asset_type: a.string(),
+        issue_type: a.string(),
+        history: a.string().array(),
+        first_seen: a.string(),    // "01-01-2024"
+        last_seen: a.string(),     // "01-01-2024"
+        cyber_status: a.string(),  // "new"
+        cyber_comment: a.string(), // ""
+    }),
+
+    getDnsZombieResults: a
+        .query()
+        .arguments({})
+        .returns(a.ref("DnsZombieItem").array())
+        .authorization(allow => [allow.publicApiKey()])
+        .handler(
+            a.handler.custom({
+                dataSource: "ExternalDnsZombieResultsTableSource",
+                entry: "./getDnsZombieResults.js"
+            })
+        ),
+    setDnsZombieItem: a
+        .mutation()
+        .arguments({
+            name: a.string(),
+            cyber_status: a.string(),
+            cyber_comment: a.string(),
+        })
+        .returns(a.ref("DnsZombieItem"))
+        .authorization(allow => [allow.publicApiKey()])
+        .handler(
+            a.handler.custom({
+                dataSource: "ExternalDnsZombieResultsTableSource",
+                entry: "./setDnsZombieItem.js"
+            })
+        ),
 });
 
 export type Schema = ClientSchema<typeof schema>;
