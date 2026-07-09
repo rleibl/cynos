@@ -40,7 +40,7 @@ export async function dnsZombieWindow(path: string) {
     tableContainer.appendChild(h2);
 
     // Filter
-    const filterDiv = document.createElement('div');
+    const filterDiv = createSummaryAndFilter();
     tableContainer.appendChild(filterDiv);
 
     // Main table and header
@@ -74,9 +74,20 @@ function renderTableBody() {
     const tbody = document.getElementById("haufe-table-body") as HTMLTableSectionElement;
     tbody.innerHTML = ""; // Clear existing rows
 
-    // FIXME filter here
+    const filteredDevices = gblFindings.filter(data => {
+        const filterInput = document.getElementById("filter-input") as HTMLInputElement;
+        const filterValue = filterInput ? filterInput.value.toLowerCase() : "";
 
-    gblFindings.forEach(data => {
+        const statusSelect = document.getElementById("status-select") as HTMLSelectElement;
+        const selectedStatus = statusSelect ? statusSelect.value : "";
+
+        const matchesFilter = !filterValue || (data["name"] && data["name"].toLowerCase().includes(filterValue)) || (data["values"] && data["values"].some((val: string) => val.toLowerCase().includes(filterValue)));
+        const matchesStatus = !selectedStatus || (data["cyber_status"] === selectedStatus);
+
+        return matchesFilter && matchesStatus;
+    });
+
+    filteredDevices.forEach(data => {
 
         // Main Row
         var row = document.createElement('tr');
@@ -87,12 +98,15 @@ function renderTableBody() {
         // Add status cell
         // Add a static name, such that we can find the cell later to update it
         // when the status is changed in the details view.
-        const c = row.insertCell()
-        c.textContent = data["cyber_status"] || "new";
-        c.id = `status-${data["name"]}`;
+        const statusCell = row.insertCell()
+        statusCell.textContent = data["cyber_status"] || "new";
+        statusCell.id = `status-${data["name"]}`;
 
         // FIXME, same here. Give a static name to find later
-        row.insertCell().textContent = data["cyber_comment"] || "";
+        const commentCell = row.insertCell();
+        commentCell.textContent = data["cyber_comment"] || "";
+        commentCell.id = `comment-${data["name"]}`;
+
         row.addEventListener('click', toggleDetailsRow);
         tbody.appendChild(row);
 
@@ -105,6 +119,50 @@ function renderTableBody() {
 
         renderDetailsRow(detailsCell, data);
     });
+}
+
+function createSummaryAndFilter() {
+    const summaryDiv = document.createElement('div');
+    summaryDiv.id = "filter-div";
+
+    const summarySpan = document.createElement('span');
+    summarySpan.id = "summary-span";
+    summarySpan.textContent = `Total Findings: ${gblFindings.length}`;
+    summaryDiv.appendChild(summarySpan);
+    
+    const filterDiv = document.createElement('div');
+    const filterSpan = document.createElement('span');
+    filterSpan.textContent = "Filter: ";
+    filterDiv.appendChild(filterSpan);
+    const filterInput = document.createElement('input');
+    filterInput.id = "filter-input";
+    filterInput.placeholder = "Filter findings...";
+    filterInput.addEventListener('input', () => { renderTableBody(); });
+    filterDiv.appendChild(filterInput);
+
+    const selectDiv = document.createElement('div');
+    const selectSpan = document.createElement('span');
+    selectSpan.textContent = "Status: ";
+    selectDiv.appendChild(selectSpan);
+    const statusSelect = document.createElement('select');
+    statusSelect.id = "status-select";
+    const allOption = document.createElement('option');
+    allOption.value = "";
+    allOption.textContent = "All";
+    statusSelect.appendChild(allOption);
+    gblStatusValues.forEach(status => {
+        const option = document.createElement('option');
+        option.value = status;
+        option.textContent = status;
+        statusSelect.appendChild(option);
+    });
+    statusSelect.addEventListener('change', () => { renderTableBody(); });
+    selectDiv.appendChild(statusSelect);
+
+    summaryDiv.appendChild(filterDiv);
+    summaryDiv.appendChild(selectDiv);
+
+    return summaryDiv;
 }
 
 function renderDetailsRow(target: HTMLTableCellElement, data: any) {
@@ -144,7 +202,7 @@ function renderDetailsRow(target: HTMLTableCellElement, data: any) {
 
         row = detailsTbody.insertRow();
         row.insertCell().textContent = "Comment";
-        row.insertCell().textContent = data["cyber_comment"] || "new";
+        row.insertCell().appendChild(createCommentCell(data));
 
         row = detailsTbody.insertRow();
         row.insertCell().textContent = "history";
@@ -211,4 +269,74 @@ function createStatusDropdown(finding: any) {
     });
 
     return select;
+}
+
+/* ********************************************************** */
+
+function createCommentCell(finding: any) {
+    const commentCell = document.createElement('td');
+    const c = document.createElement('span');
+    c.textContent = finding.cyber_comment ? finding.cyber_comment : "click to edit";
+    c.style.fontStyle = 'italic';
+    c.style.cursor = 'pointer';
+
+    const renderDisplay = () => {
+        c.textContent = finding.cyber_comment ? finding.cyber_comment : "click to edit";
+        commentCell.replaceChildren(c);
+    };
+
+    const saveComment = async (newValue: string) => {
+        const client = generateClient<Schema>();
+        const { data, errors } = await client.mutations.setDnsZombieItem({
+            name: finding.name,
+            cyber_comment: newValue.trim()
+        });
+        if (errors) {
+            console.log("Error saving comment: ", errors);
+            userNotification("ERROR", "Failed to save comment");
+            return;
+        }
+        console.log("data: ", data);
+        finding.cyber_comment = newValue.trim();
+        document.getElementById(`comment-${finding.name}`)!.textContent = newValue.trim();
+        renderDisplay();
+    };
+
+    const renderEditor = () => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = finding.cyber_comment || "";
+
+        const saveButton = document.createElement('button');
+        saveButton.type = 'button';
+        saveButton.textContent = 'save';
+
+        const save = () => saveComment(input.value);
+
+        saveButton.addEventListener('click', (event: Event) => {
+            event.stopPropagation();
+            save();
+        });
+
+        input.addEventListener('keydown', (event: KeyboardEvent) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                event.stopPropagation();
+                save();
+            }
+        });
+
+        commentCell.replaceChildren(input, saveButton);
+        input.focus();
+    };
+
+    c.addEventListener('click', (event: Event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        renderEditor();
+    });
+
+    commentCell.appendChild(c);
+
+    return commentCell;
 }
