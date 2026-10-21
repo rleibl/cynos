@@ -125,11 +125,22 @@ function renderTable() {
 }
 
 /* ********************************************************** */
+// summaryDiv
+//     summarySpan
+//     filterDiv
+//     statusDiv
 
 function renderSummaryAndFilter() {
-    const filterDiv = document.createElement('div');
-    filterDiv.className = "haufe-table-summaryheader";
+    const summaryDiv = document.createElement('div');
+    //summaryDiv.className = "haufe-table-summaryheader";
 
+    // Summary span showing total findings
+    const summarySpan = document.createElement('span');
+    summarySpan.id = "summary-span";
+    summarySpan.textContent = `Total Findings: ${gblShares.length}`;
+
+    // Filter div containing search input
+    const filterDiv = document.createElement('div');
     const searchLabel = document.createElement('label');
     searchLabel.htmlFor = "searchInput";
     searchLabel.textContent = "Search: ";
@@ -143,6 +154,8 @@ function renderSummaryAndFilter() {
     filterDiv.appendChild(searchLabel);
     filterDiv.appendChild(searchInput);
     
+    // Status div containing status filter
+    const statusDiv = document.createElement('div');
     const filterLabel = document.createElement('label');
     filterLabel.htmlFor = "statusFilter";
     filterLabel.textContent = "Filter by status: ";
@@ -158,10 +171,14 @@ function renderSummaryAndFilter() {
         filterSelect.appendChild(option);
     });
 
-    filterDiv.appendChild(filterLabel);
-    filterDiv.appendChild(filterSelect);
+    statusDiv.appendChild(filterLabel);
+    statusDiv.appendChild(filterSelect);
 
-    return filterDiv;
+    summaryDiv.appendChild(summarySpan);
+    summaryDiv.appendChild(filterDiv);
+    summaryDiv.appendChild(statusDiv);
+
+    return summaryDiv;
 }
 
 
@@ -169,6 +186,19 @@ function renderSummaryAndFilter() {
 
 export async function smbSharesWindow() {
 	const container = document.getElementById('app') as HTMLDivElement;
+
+    // Fetch data
+	const client = generateClient<Schema>();
+	const { data, errors } = await client.queries.getSMBShares({});
+
+	if (errors) {
+		console.log("Error fetching SMB shares: ", errors);
+		userNotification("ERROR", "Failed to fetch SMB shares");
+		return;
+	}
+	console.log("data: ", data)
+	
+	gblShares = data || [];
 
 	// Summary
 	const h2 = document.createElement('h2');
@@ -198,17 +228,6 @@ export async function smbSharesWindow() {
 
 	container.replaceChildren(h2, filterDiv, table);
 	
-	const client = generateClient<Schema>();
-	const { data, errors } = await client.queries.getSMBShares({});
-
-	if (errors) {
-		console.log("Error fetching SMB shares: ", errors);
-		userNotification("ERROR", "Failed to fetch SMB shares");
-		return;
-	}
-	console.log("data: ", data)
-	
-	gblShares = data || [];
     renderTable();
 	
 }
