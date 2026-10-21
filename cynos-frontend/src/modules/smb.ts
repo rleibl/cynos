@@ -66,7 +66,13 @@ function renderTable() {
 
     const filteredDevices = gblShares.filter(device => {
 
-        // filter for status first
+        // ignore closed items 
+        const ignoreClosed = (document.getElementById("ignoreClosed") as HTMLInputElement).checked;
+        if(ignoreClosed && device.cyber_status === "closed") {
+            return false;
+        }
+
+        // filter for status
         const statusFilter = (document.getElementById("statusFilter") as HTMLSelectElement).value;
         if(statusFilter !== "all" && device.cyber_status !== statusFilter) {
             return false;
@@ -171,8 +177,21 @@ function renderSummaryAndFilter() {
         filterSelect.appendChild(option);
     });
 
+    const ignoreClosedLabel = document.createElement('label');
+    ignoreClosedLabel.htmlFor = "ignoreClosed";
+    ignoreClosedLabel.textContent = "Ignore Closed: ";
+
+    const ignoreClosedCheckbox = document.createElement('input');
+    ignoreClosedCheckbox.type = "checkbox";
+    ignoreClosedCheckbox.id = "ignoreClosed";
+    ignoreClosedCheckbox.checked = true;
+    ignoreClosedCheckbox.addEventListener("change", function () { renderTable(); });
+
     statusDiv.appendChild(filterLabel);
     statusDiv.appendChild(filterSelect);
+
+    statusDiv.appendChild(ignoreClosedLabel);
+    statusDiv.appendChild(ignoreClosedCheckbox);
 
     summaryDiv.appendChild(summarySpan);
     summaryDiv.appendChild(filterDiv);

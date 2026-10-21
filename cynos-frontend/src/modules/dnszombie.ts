@@ -76,16 +76,25 @@ function renderTableBody() {
     tbody.innerHTML = ""; // Clear existing rows
 
     const filteredDevices = gblFindings.filter(data => {
-        const filterInput = document.getElementById("filter-input") as HTMLInputElement;
-        const filterValue = filterInput ? filterInput.value.toLowerCase() : "";
+        const ignoreClosed = document.getElementById("ignoreClosed") as HTMLInputElement;
+        if (ignoreClosed && ignoreClosed.checked && data["cyber_status"] === "closed") {
+            return false;
+        }
 
         const statusSelect = document.getElementById("status-select") as HTMLSelectElement;
         const selectedStatus = statusSelect ? statusSelect.value : "";
+        if (selectedStatus && data["cyber_status"] !== selectedStatus) {
+            return false;
+        }
 
-        const matchesFilter = !filterValue || (data["name"] && data["name"].toLowerCase().includes(filterValue)) || (data["values"] && data["values"].some((val: string) => val.toLowerCase().includes(filterValue)));
-        const matchesStatus = !selectedStatus || (data["cyber_status"] === selectedStatus);
+        const filterInput = document.getElementById("filter-input") as HTMLInputElement;
+        const filterValue = filterInput ? filterInput.value.toLowerCase() : "";
+        if (filterValue) {
+            const d = data["name"].toLowerCase();
+            return d.includes(filterValue);
+        }
 
-        return matchesFilter && matchesStatus;
+        return true;
     });
 
     filteredDevices.forEach(data => {
@@ -144,8 +153,8 @@ function createSummaryAndFilter() {
 
     const selectDiv = document.createElement('div');
     const selectSpan = document.createElement('span');
-    selectSpan.textContent = "Status: ";
-    selectDiv.appendChild(selectSpan);
+    selectSpan.textContent = "Filter by status: ";
+
     const statusSelect = document.createElement('select');
     statusSelect.id = "status-select";
     const allOption = document.createElement('option');
@@ -159,7 +168,20 @@ function createSummaryAndFilter() {
         statusSelect.appendChild(option);
     });
     statusSelect.addEventListener('change', () => { renderTableBody(); });
+
+    const ignoreClosedLabel = document.createElement('label');
+    ignoreClosedLabel.htmlFor = "ignoreClosed";
+    ignoreClosedLabel.textContent = "Ignore Closed: ";
+    const ignoreClosedCheckbox = document.createElement('input');
+    ignoreClosedCheckbox.type = "checkbox";
+    ignoreClosedCheckbox.id = "ignoreClosed";
+    ignoreClosedCheckbox.checked = true;
+
+    selectDiv.appendChild(selectSpan);
     selectDiv.appendChild(statusSelect);
+
+    selectDiv.appendChild(ignoreClosedLabel);
+    selectDiv.appendChild(ignoreClosedCheckbox);
 
     summaryDiv.appendChild(filterDiv);
     summaryDiv.appendChild(selectDiv);
