@@ -112,10 +112,10 @@ const schema = a.schema({
         ),
 
     DnsZombieItem: a.customType({
+        asset_id: a.string(),
         name: a.string(),
         values: a.string().array(),
         issue_id: a.string(),
-        asset_id: a.string(),
         asset_type: a.string(),
         issue_type: a.string(),
         history: a.string().array(),
@@ -139,7 +139,7 @@ const schema = a.schema({
     setDnsZombieItem: a
         .mutation()
         .arguments({
-            name: a.string(),
+            asset_id: a.string(),
             cyber_status: a.string(),
             cyber_comment: a.string(),
         })

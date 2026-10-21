@@ -4,10 +4,11 @@ import { generateClient } from "aws-amplify/data";
 import { userNotification } from "./notifications.ts";
 
 const gblColumns: string[] = [
-    "name",
-    "values",
-    "status",
-    "comment"
+    "Name",
+    "Asset Type",
+    "Last Seen",
+    "Status",
+    "Comment"
 ];
 
 const gblStatusValues: string[] = [
@@ -93,7 +94,8 @@ function renderTableBody() {
         var row = document.createElement('tr');
         row.className = "haufe-table-row";
         row.insertCell().textContent = data["name"] || "";
-        row.insertCell().innerHTML = (data["values"] || []).join(",<br>");
+        row.insertCell().innerHTML = data["asset_type"] || "";
+        row.insertCell().textContent = data["last_seen"] || "";
 
         // Add status cell
         // Add a static name, such that we can find the cell later to update it
@@ -197,6 +199,10 @@ function renderDetailsRow(target: HTMLTableCellElement, data: any) {
         row.insertCell().textContent = data["last_seen"] || "";
 
         row = detailsTbody.insertRow();
+        row.insertCell().textContent = "values";
+        row.insertCell().innerHTML = (data["values"] || []).join(",<br>");
+
+        row = detailsTbody.insertRow();
         row.insertCell().textContent = "Status";
         row.insertCell().appendChild(createStatusDropdown(data));
 
@@ -251,9 +257,9 @@ function createStatusDropdown(finding: any) {
     select.addEventListener('change', async (event: Event) => {
         const newValue = (event.target as HTMLSelectElement).value;
         const client = generateClient<Schema>();
-        console.log(`Updating status for ${finding.name} from ${currentValue} to ${newValue}`);
+        console.log(`Updating status for ${finding.asset_id} from ${currentValue} to ${newValue}`);
         const { data, errors } = await client.mutations.setDnsZombieItem({
-            name: finding.name,
+            asset_id: finding.asset_id,
             cyber_status: newValue
         });
         if (errors) {
@@ -265,7 +271,7 @@ function createStatusDropdown(finding: any) {
         }
         console.log("data: ", data);
         finding.cyber_status = newValue;
-        document.getElementById(`status-${finding.name}`)!.textContent = newValue;
+        document.getElementById(`status-${finding.asset_id}`)!.textContent = newValue;
     });
 
     return select;
@@ -288,7 +294,7 @@ function createCommentCell(finding: any) {
     const saveComment = async (newValue: string) => {
         const client = generateClient<Schema>();
         const { data, errors } = await client.mutations.setDnsZombieItem({
-            name: finding.name,
+            asset_id: finding.asset_id,
             cyber_comment: newValue.trim()
         });
         if (errors) {
@@ -298,7 +304,7 @@ function createCommentCell(finding: any) {
         }
         console.log("data: ", data);
         finding.cyber_comment = newValue.trim();
-        document.getElementById(`comment-${finding.name}`)!.textContent = newValue.trim();
+        document.getElementById(`comment-${finding.asset_id}`)!.textContent = newValue.trim();
         renderDisplay();
     };
 

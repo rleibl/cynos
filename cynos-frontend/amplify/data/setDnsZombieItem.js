@@ -21,11 +21,11 @@ function example_request(ctx) {
 */
 
 export function request(ctx) {
-    const { name, ...values } = ctx.args;
+    const { asset_id, ...values } = ctx.args;
 
     return ddb.update({
         key: {
-            name: name,
+            asset_id: asset_id,
         },
         update: {
             ...values
