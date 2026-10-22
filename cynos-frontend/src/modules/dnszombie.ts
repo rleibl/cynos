@@ -2,6 +2,7 @@ import type { Schema } from "../../amplify/data/resource.ts";
 import { generateClient } from "aws-amplify/data";
 
 import { userNotification } from "./notifications.ts";
+import { EntryStatusValues } from "./globals.ts";
 
 const gblColumns: string[] = [
     "Name",
@@ -9,13 +10,6 @@ const gblColumns: string[] = [
     "Last Seen",
     "Status",
     "Comment"
-];
-
-const gblStatusValues: string[] = [
-    "new",
-    "open",
-    "closed",
-    "in_progress"
 ];
 
 var gblFindings: any[] = [];
@@ -77,7 +71,7 @@ function renderTableBody() {
 
     const filteredDevices = gblFindings.filter(data => {
         const ignoreClosed = document.getElementById("ignoreClosed") as HTMLInputElement;
-        if (ignoreClosed && ignoreClosed.checked && data["cyber_status"] === "closed") {
+        if (ignoreClosed && ignoreClosed.checked && data["cyber_status"].startsWith("closed")) {
             return false;
         }
 
@@ -161,7 +155,7 @@ function createSummaryAndFilter() {
     allOption.value = "";
     allOption.textContent = "All";
     statusSelect.appendChild(allOption);
-    gblStatusValues.forEach(status => {
+    EntryStatusValues.forEach(status => {
         const option = document.createElement('option');
         option.value = status;
         option.textContent = status;
@@ -265,7 +259,7 @@ function createStatusDropdown(finding: any) {
     const select = document.createElement('select');
     //select.className = "status-dropdown"; // For CSS styling
 
-    gblStatusValues.forEach(val => {
+    EntryStatusValues.forEach(val => {
         const option = document.createElement('option');
         option.value = val;
         option.textContent = val;

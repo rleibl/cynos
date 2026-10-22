@@ -2,6 +2,7 @@ import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../../amplify/data/resource.ts";
 
 import { userNotification } from "./notifications.ts";
+import { EntryStatusValues } from "./globals.ts";
 
 /* ********************************************************** */
 /* globals                                                    */
@@ -21,12 +22,6 @@ const gblColumns: string[] = [
     "Comment",
     "Status",
     "Analyst Notes"
-];
-
-const gblStatusValues: string[] = [
-    "new",
-    "verified",
-    "action needed"
 ];
 	
 /* ********************************************************** */
@@ -68,7 +63,7 @@ function renderTable() {
 
         // ignore closed items 
         const ignoreClosed = (document.getElementById("ignoreClosed") as HTMLInputElement).checked;
-        if(ignoreClosed && device.cyber_status === "closed") {
+        if(ignoreClosed && device.cyber_status.startsWith("closed")) {
             return false;
         }
 
@@ -170,7 +165,7 @@ function renderSummaryAndFilter() {
     filterSelect.id = "statusFilter";
     filterSelect.addEventListener("change", function () { renderTable(); });
 
-    ["all", ...gblStatusValues].forEach(optionValue => {
+    ["all", ...EntryStatusValues].forEach(optionValue => {
         const option = document.createElement('option');
         option.value = optionValue;
         option.textContent = optionValue.charAt(0).toUpperCase() + optionValue.slice(1);
@@ -357,7 +352,7 @@ function createStatusDropdown(device: any) {
     const select = document.createElement('select');
     //select.className = "status-dropdown"; // For CSS styling
 
-    gblStatusValues.forEach(val => {
+    EntryStatusValues.forEach(val => {
         const option = document.createElement('option');
         option.value = val;
         option.textContent = val;
