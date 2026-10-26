@@ -16,7 +16,17 @@ import { dnsZombieWindow } from "./modules/dnszombie.ts";
 
 import outputs from '../amplify_outputs.json';
 
-Amplify.configure(outputs);
+//Amplify.configure(outputs);
+Amplify.configure({
+  API: {
+    GraphQL: {
+      endpoint: 'https://jw5rmsh7yzc4vbp4h64okbkvyy.appsync-api.eu-central-1.amazonaws.com/graphql',
+      region: 'eu-central-1',
+      defaultAuthMode: 'apiKey',
+      apiKey: ''
+    }
+  }
+});
 
 /* ********************************************************** */
 async function checkUser() {
