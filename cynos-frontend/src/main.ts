@@ -2,7 +2,6 @@ import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../amplify/data/resource.ts";
 import './style.css'
 import { Amplify } from "aws-amplify";
-import { parseAmplifyConfig } from "aws-amplify/utils"
 
 import { getCurrentUser } from 'aws-amplify/auth'
 import { fetchUserAttributes } from 'aws-amplify/auth'
@@ -17,18 +16,7 @@ import { dnsZombieWindow } from "./modules/dnszombie.ts";
 
 import outputs from '../amplify_outputs.json';
 
-const amplifyConfig = parseAmplifyConfig(outputs);
-Amplify.configure({
-  ...amplifyConfig,
-  API: {
-    GraphQL: {
-      endpoint: 'https://jw5rmsh7yzc4vbp4h64okbkvyy.appsync-api.eu-central-1.amazonaws.com/graphql',
-      region: 'eu-central-1',
-      defaultAuthMode: 'apiKey',
-      apiKey: ''
-    }
-  }
-});
+Amplify.configure(outputs);
 
 /* ********************************************************** */
 async function checkUser() {
